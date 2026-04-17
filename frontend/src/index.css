@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Performance optimizations */
+
+/* Use GPU for animations */
+@layer utilities {
+  .gpu {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000;
+    will-change: transform;
+  }
+  
+  /* Only enable backdrop blur where it's needed and for better performance devices */
+  .optimized-blur {
+    @media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
+      backdrop-filter: blur(8px);
+    }
+  }
+  
+  /* Optimize font rendering */
+  .optimize-text {
+    text-rendering: optimizeSpeed;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  /* Optimize images */
+  .optimize-img {
+    content-visibility: auto;
+    contain: content;
+  }
+}
+
+/* Reduce motion when user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Critical CSS - everything above the fold */
+body {
+  @apply bg-primary-900 text-white optimize-text overflow-x-hidden;
+  background-color: #111827 !important; /* Force dark background */
+}
+
+/* Lazy-loaded CSS */
+.heroBackground {
+  background: radial-gradient(circle at center, rgba(56, 189, 248, 0.15) 0%, rgba(20, 184, 166, 0.1) 25%, transparent 70%);
+}
+
+/* Progressive CSS loading */
+.prose {
+  @apply text-gray-200;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  @apply text-white;
+}
+
+.prose a {
+  @apply text-primary-400 hover:text-primary-300;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-primary-500 bg-primary-800/30 pl-4 py-1 italic;
+}
+
+/* Apply styles to html elements */
+html, body, #root {
+  height: 100%;
+  background-color: #111827;
+  color-scheme: dark;
+}
+
+/* Dark theme base styles - force dark theme */
+html {
+  color-scheme: dark !important;
+}
+
+body {
+  background-color: #111827 !important;
+  color: white !important;
+}
+
+/* Fix for Chakra overlays and modals */
+.chakra-ui-dark, .chakra-ui-light {
+  background-color: transparent !important;
+}
+
+.chakra-ui-light div[role="dialog"],
+.chakra-ui-dark div[role="dialog"] {
+  background-color: #1F2937 !important;
+}
+
+.chakra-modal__overlay {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
