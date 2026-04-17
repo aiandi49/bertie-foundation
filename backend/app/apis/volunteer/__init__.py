@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-import databutton as db
-from app.apis.email_notifications import send_form_notifications
 from typing import List
+import uuid
+from app.db.supabase_client import get_supabase
+from app.apis.email_notifications import send_form_notifications
 
 router = APIRouter()
 
@@ -22,13 +23,10 @@ class VolunteerResponse(BaseModel):
 
 @router.post("/volunteer")
 def submit_volunteer_application(request: VolunteerRequest) -> VolunteerResponse:
-    """Submit a volunteer application"""
     try:
-        # Store the volunteer application
-        applications = db.storage.json.get("volunteer_applications", default=[])
-        
-        application_data = {
-            "id": f"volunteer_{len(applications) + 1}",
+        supabase = get_supabase()
+        data = {
+            "id": str(uuid.uuid4()),
             "name": request.name,
             "email": request.email,
             "message": request.message,
@@ -38,32 +36,11 @@ def submit_volunteer_application(request: VolunteerRequest) -> VolunteerResponse
             "submitted_at": datetime.now().isoformat(),
             "status": "pending"
         }
-        
-        applications.append(application_data)
-        db.storage.json.put("volunteer_applications", applications)
-        
-        # Send notification emails using the unified system
+        supabase.table("volunteer_applications").insert(data).execute()
         try:
-            notification_data = {
-                "name": request.name,
-                "email": request.email,
-                "message": request.message,
-                "interests": request.interests,
-                "skills": request.skills,
-                "availability": request.availability,
-                "submitted_at": application_data["submitted_at"]
-            }
-            
-            send_form_notifications("volunteer_application", notification_data)
+            send_form_notifications("volunteer_application", {**data})
         except Exception as e:
-            print(f"Error sending notification emails: {e}")
-            # Continue even if email sending fails
-        
-        return VolunteerResponse(
-            id=application_data["id"],
-            status="received",
-            submitted_at=datetime.now()
-        )
+            print(f"Notification error: {e}")
+        return VolunteerResponse(id=data["id"], status="received", submitted_at=datetime.now())
     except Exception as e:
-        print(f"Error submitting volunteer application: {e}")
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        raise HTTPException(status_code=500, detail=str(e))

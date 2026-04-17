@@ -1,8 +1,9 @@
-from fastapi import APIRouter
-from pydantic import BaseModel, EmailStr
-import databutton as db
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 from datetime import datetime
-import json
+from typing import Optional
+import uuid
+from app.db.supabase_client import get_supabase
 from app.apis.email_notifications import send_form_notifications
 
 router = APIRouter()
@@ -11,97 +12,50 @@ class FeedbackRequest(BaseModel):
     rating: int
     comment: str
     category: str
-    email: str | None = None
+    email: Optional[str] = None
 
 class FeedbackResponse(BaseModel):
     message: str
     id: str
 
-def sanitize_storage_key(key: str) -> str:
-    """Sanitize storage key to only allow alphanumeric and ._- symbols"""
-    return "".join(c for c in key if c.isalnum() or c in "._-")
-
 @router.post("/feedback")
 def submit_feedback(feedback: FeedbackRequest) -> FeedbackResponse:
-    # Create a unique ID for the feedback
-    feedback_id = f"feedback_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    
-    # Add timestamp and pending status to feedback data
-    feedback_data = {
-        **feedback.model_dump(),
-        "timestamp": datetime.now().isoformat(),
-        "id": feedback_id,
-        "status": "pending"
-    }
-    
-    # Get existing feedback or create new list
     try:
-        all_feedback = db.storage.json.get("feedback_data")
-    except:
-        all_feedback = []
-    
-    # Add new feedback
-    all_feedback.append(feedback_data)
-    
-    # Store updated feedback
-    db.storage.json.put("feedback_data", all_feedback)
-    
-    # Send notification emails using the unified system
-    try:
-        notification_data = {
+        supabase = get_supabase()
+        feedback_id = str(uuid.uuid4())
+        data = {
+            "id": feedback_id,
             "rating": feedback.rating,
             "comment": feedback.comment,
             "category": feedback.category,
             "email": feedback.email,
-            "created_at": feedback_data["timestamp"]
+            "created_at": datetime.now().isoformat(),
+            "status": "pending"
         }
-        
-        # Only send user confirmation if email was provided
-        send_form_notifications("feedback", notification_data)
+        supabase.table("feedback").insert(data).execute()
+        try:
+            send_form_notifications("feedback", {**data})
+        except Exception as e:
+            print(f"Notification error: {e}")
+        return FeedbackResponse(message="Thank you for your feedback!", id=feedback_id)
     except Exception as e:
-        print(f"Error sending notification emails: {e}")
-        # Continue even if email sending fails
-    
-    return FeedbackResponse(
-        message="Thank you for your feedback!",
-        id=feedback_id
-    )
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/feedback/stats")
 def get_feedback_stats():
     try:
-        all_feedback = db.storage.json.get("feedback_data")
-        # Filter for approved feedback only
-        approved_feedback = [f for f in all_feedback if f.get("status") == "approved"]
-    except:
-        approved_feedback = []
-    
-    # Calculate statistics
-    total_feedback = len(approved_feedback)
-    if total_feedback == 0:
-        return {
-            "total_feedback": 0,
-            "average_rating": 0,
-            "category_distribution": {},
-            "rating_distribution": {str(i): 0 for i in range(1, 6)}
-        }
-    
-    # Calculate averages and distributions
-    total_rating = 0
-    category_dist = {}
-    rating_dist = {str(i): 0 for i in range(1, 6)}
-    
-    for feedback in approved_feedback:
-        rating = feedback["rating"]
-        category = feedback["category"]
-        
-        total_rating += rating
-        rating_dist[str(rating)] += 1
-        category_dist[category] = category_dist.get(category, 0) + 1
-    
-    return {
-        "total_feedback": total_feedback,
-        "average_rating": round(total_rating / total_feedback, 2),
-        "category_distribution": category_dist,
-        "rating_distribution": rating_dist
-    }
+        supabase = get_supabase()
+        result = supabase.table("feedback").select("*").eq("status", "approved").execute()
+        approved = result.data or []
+        total = len(approved)
+        if total == 0:
+            return {"total_feedback": 0, "average_rating": 0, "category_distribution": {}, "rating_distribution": {str(i): 0 for i in range(1, 6)}}
+        total_rating = sum(f["rating"] for f in approved)
+        category_dist = {}
+        rating_dist = {str(i): 0 for i in range(1, 6)}
+        for f in approved:
+            rating_dist[str(f["rating"])] = rating_dist.get(str(f["rating"]), 0) + 1
+            category_dist[f["category"]] = category_dist.get(f["category"], 0) + 1
+        return {"total_feedback": total, "average_rating": round(total_rating / total, 2), "category_distribution": category_dist, "rating_distribution": rating_dist}
+    except Exception as e:
+        return {"total_feedback": 0, "average_rating": 0, "category_distribution": {}, "rating_distribution": {}}

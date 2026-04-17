@@ -1,34 +1,11 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
-import databutton as db
+from typing import Optional, List, Dict
+from datetime import datetime
 import uuid
-import re
+from app.db.supabase_client import get_supabase
 
 router = APIRouter()
-
-def sanitize_storage_key(key: str) -> str:
-    """Sanitize storage key to only allow alphanumeric and ._- symbols"""
-    return re.sub(r'[^a-zA-Z0-9._-]', '', key)
-
-class DonationUpdate(BaseModel):
-    amount: float
-    donor_name: Optional[str] = None
-    donor_email: Optional[str] = None
-    timestamp: Optional[str] = None
-
-class Campaign(BaseModel):
-    id: str
-    title: str
-    description: str
-    goal_amount: float
-    current_amount: float = 0
-    start_date: str
-    end_date: Optional[str] = None
-    is_active: bool = True
-    recent_donations: List[Dict[str, Any]] = []
-    impact_metrics: Dict[str, str] = {}
 
 class CampaignCreate(BaseModel):
     title: str
@@ -38,194 +15,60 @@ class CampaignCreate(BaseModel):
     end_date: Optional[str] = None
     impact_metrics: Dict[str, str] = {}
 
-class CampaignUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    goal_amount: Optional[float] = None
-    current_amount: Optional[float] = None
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
-    is_active: Optional[bool] = None
-    impact_metrics: Optional[Dict[str, str]] = None
+class DonationUpdate(BaseModel):
+    amount: float
+    donor_name: Optional[str] = None
+    donor_email: Optional[str] = None
 
 @router.post("/campaigns")
-def create_campaign(campaign: CampaignCreate):
-    """Create a new fundraising campaign"""
+def create_campaign(c: CampaignCreate) -> dict:
     try:
-        # Generate unique ID
-        campaign_id = f"campaign_{uuid.uuid4().hex[:8]}"
-        
-        # Set default start date if not provided
-        start_date = campaign.start_date or datetime.now().isoformat()
-        
-        # Create campaign object
-        new_campaign = Campaign(
-            id=campaign_id,
-            title=campaign.title,
-            description=campaign.description,
-            goal_amount=campaign.goal_amount,
-            current_amount=0,
-            start_date=start_date,
-            end_date=campaign.end_date,
-            is_active=True,
-            recent_donations=[],
-            impact_metrics=campaign.impact_metrics
-        )
-        
-        # Get existing campaigns
-        campaigns = db.storage.json.get(sanitize_storage_key("fundraising_campaigns"), default=[])
-        
-        # Add new campaign
-        campaigns.append(new_campaign.dict())
-        
-        # Save updated campaigns
-        db.storage.json.put(sanitize_storage_key("fundraising_campaigns"), campaigns)
-        
-        return new_campaign.dict()
+        supabase = get_supabase()
+        data = {"id": str(uuid.uuid4()), "title": c.title, "description": c.description, "goal_amount": c.goal_amount, "current_amount": 0, "start_date": c.start_date or datetime.now().isoformat(), "end_date": c.end_date, "is_active": True, "recent_donations": [], "impact_metrics": c.impact_metrics}
+        result = supabase.table("campaigns").insert(data).execute()
+        return result.data[0] if result.data else data
     except Exception as e:
-        print(f"Error creating campaign: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/campaigns")
-def list_campaigns(active_only: bool = False):
-    """List all fundraising campaigns"""
+def list_campaigns(active_only: bool = False) -> List[dict]:
     try:
-        campaigns = db.storage.json.get(sanitize_storage_key("fundraising_campaigns"), default=[])
-        
+        supabase = get_supabase()
+        query = supabase.table("campaigns").select("*").order("start_date", desc=True)
         if active_only:
-            # Filter to only include active campaigns
-            now = datetime.now().isoformat()
-            campaigns = [
-                c for c in campaigns 
-                if c.get("is_active", True) and 
-                (not c.get("end_date") or c.get("end_date") > now)
-            ]
-        
-        return sorted(campaigns, key=lambda x: x.get("start_date", ""), reverse=True)
+            query = query.eq("is_active", True)
+        return query.execute().data or []
     except Exception as e:
-        print(f"Error listing campaigns: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/campaigns/{campaign_id}")
-def get_campaign(campaign_id: str):
-    """Get a specific campaign by ID"""
+def get_campaign(campaign_id: str) -> dict:
     try:
-        campaigns = db.storage.json.get(sanitize_storage_key("fundraising_campaigns"), default=[])
-        campaign = next((c for c in campaigns if c.get("id") == campaign_id), None)
-        
-        if not campaign:
+        supabase = get_supabase()
+        result = supabase.table("campaigns").select("*").eq("id", campaign_id).execute()
+        if not result.data:
             raise HTTPException(status_code=404, detail="Campaign not found")
-            
-        return campaign
+        return result.data[0]
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error retrieving campaign: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.put("/campaigns/{campaign_id}")
-def update_campaign(campaign_id: str, update: CampaignUpdate):
-    """Update a campaign's details"""
-    try:
-        campaigns = db.storage.json.get(sanitize_storage_key("fundraising_campaigns"), default=[])
-        
-        # Find the campaign to update
-        campaign_index = next((i for i, c in enumerate(campaigns) if c.get("id") == campaign_id), None)
-        
-        if campaign_index is None:
-            raise HTTPException(status_code=404, detail="Campaign not found")
-            
-        # Get the campaign
-        campaign = campaigns[campaign_index]
-        
-        # Update fields that are provided
-        update_dict = {k: v for k, v in update.dict().items() if v is not None}
-        campaign.update(update_dict)
-        
-        # Save updated campaigns
-        db.storage.json.put(sanitize_storage_key("fundraising_campaigns"), campaigns)
-        
-        return campaign
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Error updating campaign: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/campaigns/{campaign_id}/donate")
-def add_donation_to_campaign(campaign_id: str, donation: DonationUpdate):
-    """Add a donation to a campaign"""
+def add_donation_to_campaign(campaign_id: str, donation: DonationUpdate) -> dict:
     try:
-        campaigns = db.storage.json.get(sanitize_storage_key("fundraising_campaigns"), default=[])
-        
-        # Find the campaign
-        campaign_index = next((i for i, c in enumerate(campaigns) if c.get("id") == campaign_id), None)
-        
-        if campaign_index is None:
+        supabase = get_supabase()
+        result = supabase.table("campaigns").select("*").eq("id", campaign_id).execute()
+        if not result.data:
             raise HTTPException(status_code=404, detail="Campaign not found")
-            
-        # Get the campaign
-        campaign = campaigns[campaign_index]
-        
-        # Check if campaign is active
-        if not campaign.get("is_active", True):
-            raise HTTPException(status_code=400, detail="Campaign is not active")
-            
-        # Check if campaign end date has passed
-        if campaign.get("end_date") and campaign.get("end_date") < datetime.now().isoformat():
-            raise HTTPException(status_code=400, detail="Campaign has ended")
-        
-        # Add donation amount to current amount
-        campaign["current_amount"] = campaign.get("current_amount", 0) + donation.amount
-        
-        # Add donation to recent donations
-        donation_record = {
-            "amount": donation.amount,
-            "donor_name": donation.donor_name or "Anonymous",
-            "timestamp": donation.timestamp or datetime.now().isoformat()
-        }
-        
-        # Keep only the 5 most recent donations
-        recent_donations = campaign.get("recent_donations", [])
-        recent_donations.append(donation_record)
-        campaign["recent_donations"] = sorted(
-            recent_donations, 
-            key=lambda x: x.get("timestamp", ""), 
-            reverse=True
-        )[:5]
-        
-        # Save updated campaigns
-        db.storage.json.put(sanitize_storage_key("fundraising_campaigns"), campaigns)
-        
-        return campaign
+        campaign = result.data[0]
+        new_amount = campaign.get("current_amount", 0) + donation.amount
+        recent = campaign.get("recent_donations", [])
+        recent.append({"amount": donation.amount, "donor_name": donation.donor_name or "Anonymous", "timestamp": datetime.now().isoformat()})
+        recent = sorted(recent, key=lambda x: x.get("timestamp",""), reverse=True)[:5]
+        updated = supabase.table("campaigns").update({"current_amount": new_amount, "recent_donations": recent}).eq("id", campaign_id).execute()
+        return updated.data[0] if updated.data else campaign
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error adding donation: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.post("/campaigns/{campaign_id}/reset")
-def reset_campaign(campaign_id: str):
-    """Reset a campaign's progress (for admin purposes)"""
-    try:
-        campaigns = db.storage.json.get(sanitize_storage_key("fundraising_campaigns"), default=[])
-        
-        # Find the campaign
-        campaign_index = next((i for i, c in enumerate(campaigns) if c.get("id") == campaign_id), None)
-        
-        if campaign_index is None:
-            raise HTTPException(status_code=404, detail="Campaign not found")
-            
-        # Reset the campaign progress
-        campaigns[campaign_index]["current_amount"] = 0
-        campaigns[campaign_index]["recent_donations"] = []
-        
-        # Save updated campaigns
-        db.storage.json.put(sanitize_storage_key("fundraising_campaigns"), campaigns)
-        
-        return campaigns[campaign_index]
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Error resetting campaign: {e}")
         raise HTTPException(status_code=500, detail=str(e))
