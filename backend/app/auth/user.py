@@ -1,35 +1,33 @@
-"""Fastapi dependency to extract user that has been authenticated by middleware.
+"""Auth module - simplified for standalone deployment."""
 
-Usage:
+from typing import Annotated, Any, Optional
+from fastapi import Depends, HTTPException, status
+from fastapi.requests import HTTPConnection
+from pydantic import BaseModel
 
-    from app.auth import AuthorizedUser, AuthorizedApiKey, User, ApiKeyClaims
 
-    @router.get("/get-user")
-    def get_user(user: AuthorizedUser) -> User:
-        return user
+class User(BaseModel):
+    sub: str
+    email: Optional[str] = None
+    name: Optional[str] = None
 
-    @router.get("/get-apikey")
-    def get_apikey(apikey: AuthorizedApiKey) -> ApiKeyClaims:
-        return apikey
 
-"""
+class ApiKeyClaims(BaseModel):
+    key: str
 
-from typing import Annotated, Any
 
-from fastapi import Depends
+def get_authorized_user(request: HTTPConnection) -> User:
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 
-from app.internal.mw.auth_mw import (
-    ApiKeyClaims,
-    User,
-    get_authorized_apikey,
-    get_authorized_user,
-    get_extra_stack_auth_metadata,
-)
+
+def get_authorized_apikey(request: HTTPConnection) -> ApiKeyClaims:
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+
+def get_extra_stack_auth_metadata(request: HTTPConnection) -> Optional[dict]:
+    return None
+
 
 AuthorizedUser = Annotated[User, Depends(get_authorized_user)]
-
 AuthorizedApiKey = Annotated[ApiKeyClaims, Depends(get_authorized_apikey)]
-
-StackAuthUserData = Annotated[
-    dict[str, Any] | None, Depends(get_extra_stack_auth_metadata)
-]
+StackAuthUserData = Annotated[dict[str, Any] | None, Depends(get_extra_stack_auth_metadata)]
