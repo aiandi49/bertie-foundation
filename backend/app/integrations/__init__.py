@@ -35,14 +35,11 @@ def get_integration_access_token(
 
     try:
         response = client.post("/integrations/mint-access-token", json=payload)
-        response.raise_for_status()  # Raises an HTTPError for bad responses (4xx or 5xx)
+        response.raise_for_status()
 
-        # Assuming the response contains a JSON body with the access token
         response_data = response.json()
 
-        access_token = response_data.get(
-            "accessToken"
-        )  # Adjusted to accessToken based on common conventions
+        access_token = response_data.get("accessToken")
 
         if not access_token:
             raise HTTPException(

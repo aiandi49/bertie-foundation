@@ -1,6 +1,8 @@
-import databutton as db
+import os
+
 import httpx
 
 
 def get_dbapi_client() -> httpx.Client:
-    return db.internal.dbapiclient.get_dbapi_client()
+    base_url = os.environ.get("DATABUTTON_API_URL", "")
+    return httpx.Client(base_url=base_url)

@@ -1,3 +1,5 @@
+backend/app/internal/extensions/firebase_auth.py
+
 from typing import Optional
 
 from pydantic import BaseModel, Field

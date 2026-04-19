@@ -46,7 +46,7 @@ const MemberCard: React.FC<MemberCardProps> = ({ name, nickname, title, imageUrl
         <div className={`absolute inset-0 bg-gradient-to-r rounded-full opacity-70 blur-xl transition-all duration-500 ${level === "administration" ? "from-red-500/60 via-blue-500/40 to-purple-500/60" : "from-blue-500/60 to-purple-500/60"}`} />
         <div className="relative w-32 h-32">
           <img
-            src={imageUrl || "https://static.databutton.com/public/65360aa8-19c8-4d03-b56c-9401fdbd71f8/new%20bertie%20logo%20borderless%20tall%20with%20slogan%20(1).jpg"}
+            src={imageUrl || "/images/bertie-logo.jpg"}
             alt={name}
             className={`w-full h-full ${imageUrl ? 'object-cover rounded-full border-4 border-white/20' : 'object-contain rounded-lg'} 
                      group-hover:border-red-500/50 transition-colors duration-500`}
@@ -252,7 +252,7 @@ export default function Members() {
               {/* Image container */} 
               <div className="relative w-full h-full flex justify-center items-center"> {/* Container for image */}
                 <img
-                  src="https://static.databutton.com/public/65360aa8-19c8-4d03-b56c-9401fdbd71f8/new%20bertie%20logo%20borderless%20tall%20with%20slogan%20(1).jpg"
+                  src="/images/bertie-logo.jpg"
                   alt="Bertie Foundation Highlight"
                   className="h-full w-auto object-contain rounded-xl border-4 border-white/20 bg-white/10" // Fill container, object-contain
                 />

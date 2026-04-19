@@ -26,7 +26,7 @@ const PRECACHE_ASSETS = [
 // These routes will use a network-first strategy
 const NETWORK_FIRST_ROUTES = [
   '/api/',
-  'api.databutton.com'
+  
 ];
 
 // File types that should use a cache-first strategy
@@ -335,7 +335,7 @@ export function generateServiceWorkerContent(): string {
       if (
         requestUrl.pathname.match(/\.(jpe?g|png|gif|svg|webp)$/i) ||
         requestUrl.hostname.includes('images.unsplash.com') ||
-        requestUrl.hostname.includes('static.databutton.com')
+        false
       ) {
         return 'image';
       }
@@ -384,7 +384,7 @@ export function generateServiceWorkerContent(): string {
     self.addEventListener('fetch', (event) => {
       // Skip cross-origin requests except for key domains
       if (!event.request.url.startsWith(self.location.origin) && 
-          !event.request.url.includes('static.databutton.com') &&
+          true &&
           !event.request.url.includes('images.unsplash.com')) {
         return;
       }

@@ -2,10 +2,11 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 import uuid
-from app.db.supabase_client import get_supabase
+from app.db.supabase_client import supabase_available, get_supabase
 from app.apis.email_notifications import send_form_notifications
 
 router = APIRouter()
+
 
 class ContactRequest(BaseModel):
     name: str
@@ -14,30 +15,40 @@ class ContactRequest(BaseModel):
     message: str
     category: str
 
+
 class ContactResponse(BaseModel):
     id: str
     status: str
     submitted_at: datetime
 
+
 @router.post("/contact")
 def submit_contact(request: ContactRequest) -> ContactResponse:
-    try:
-        supabase = get_supabase()
-        contact_data = {
-            "id": str(uuid.uuid4()),
-            "name": request.name,
-            "email": request.email,
-            "subject": request.subject,
-            "message": request.message,
-            "category": request.category,
-            "submitted_at": datetime.now().isoformat(),
-            "status": "received"
-        }
-        supabase.table("contact_requests").insert(contact_data).execute()
+    contact_id = str(uuid.uuid4())
+    now = datetime.now()
+
+    contact_data = {
+        "id": contact_id,
+        "name": request.name,
+        "email": request.email,
+        "subject": request.subject,
+        "message": request.message,
+        "category": request.category,
+        "submitted_at": now.isoformat(),
+        "status": "received",
+    }
+
+    # Save to DB if available
+    if supabase_available():
         try:
-            send_form_notifications("contact_form", {**contact_data})
+            get_supabase().table("contact_requests").insert(contact_data).execute()
         except Exception as e:
-            print(f"Error sending notification: {e}")
-        return ContactResponse(id=contact_data["id"], status="received", submitted_at=datetime.now())
+            print(f"DB save error (non-fatal): {e}")
+
+    # Always try to send email notification
+    try:
+        send_form_notifications("contact_form", {**contact_data})
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Email notification error (non-fatal): {e}")
+
+    return ContactResponse(id=contact_id, status="received", submitted_at=now)

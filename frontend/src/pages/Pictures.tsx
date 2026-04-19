@@ -61,7 +61,7 @@ export default function Pictures() {
     ],
     domains: [
       // Preconnect to image hosting domains
-      'static.databutton.com',
+      
       'images.unsplash.com',
       API_URL.replace(/^https?:\/\//, '') // Add API domain for faster API requests
     ]

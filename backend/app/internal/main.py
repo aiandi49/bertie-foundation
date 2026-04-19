@@ -1,3 +1,40 @@
+backend/app/internal/main.py
+
+
+def _health_shutdown_countdown():
+    """Special behaviour for Databutton service pool."""
+    global health_shutdown_counter
+    if health_shutdown_counter is None:
+        return
+    health_shutdown_counter -= 1
+    if health_shutdown_counter < 0:
+        print("Health checks completed, shutting down.")
+        time.sleep(1)
+        signal.raise_signal(signal.SIGTERM)
+    else:
+        print(f"{health_shutdown_counter} health checks left until shutdown")
+
+
+
+   app = FastAPI(
+        title="Bertie Foundation API",
+        version="0.0.1",
+        servers=[
+            {
+                "url": f"http://127.0.0.1:{cfg.USER_API_PORT}",
+                "description": "Internal",
+            },
+            {
+                "url": f"{cfg.DEVX_HOST}{cfg.DEVX_BASE_PATH}/app",
+                "description": "External",
+            },
+        ],
+        generate_unique_id_function=custom_generate_unique_id,
+        lifespan=lifespan,
+    )
+
+
+
 import os
 import re
 import signal
@@ -243,7 +280,7 @@ def create_app(cfg: Config | None = None) -> FastAPI:
     devx = app_state.devx
 
     app = FastAPI(
-        title="Databutton generated API",
+        title="Bertie Foundation API",
         version="0.0.1",
         servers=[
             {

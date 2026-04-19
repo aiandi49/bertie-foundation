@@ -358,7 +358,7 @@ export default function ContactUs() {
             >
               <h3 className="text-xl font-bold text-gray-800 mb-4">Scan to Connect on LINE</h3>
               <img 
-                src="https://static.databutton.com/public/65360aa8-19c8-4d03-b56c-9401fdbd71f8/QR CODE (BERTIE).jpeg" 
+                src="/images/qr-code-bertie.jpeg" 
                 alt="LINE QR Code" 
                 className="w-full max-w-xs rounded-lg"
               />

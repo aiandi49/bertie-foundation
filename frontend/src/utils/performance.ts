@@ -37,7 +37,7 @@ export function initializePerformance() {
   
   // Add resource hints for common domains
   const commonDomains = [
-    'static.databutton.com',
+    
     'fonts.googleapis.com',
     'images.unsplash.com'
   ];

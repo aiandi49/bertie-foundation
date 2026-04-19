@@ -35,9 +35,9 @@ export function getResourceHints(options?: ResourceHintOptions): void {
   const defaultOptions: ResourceHintOptions = {
     preconnect: [
       // Common API domains
-      { href: 'https://api.databutton.com', crossorigin: true },
+      
       // Common static asset domains
-      { href: 'https://static.databutton.com', crossorigin: true },
+      
       // Common image hosting services
       { href: 'https://images.unsplash.com', crossorigin: true }
     ],

@@ -1,3 +1,31 @@
+backend/app/internal/state.py
+
+
+def set_app_state(app: FastAPI, app_state: AppState):
+    app.state.databutton_app_state = app_state
+
+
+def get_app_state(app: FastAPI) -> AppState:
+    return app.state.databutton_app_state
+
+
+def databutton_app_state(request: HTTPConnection) -> AppState:
+    """Dependency injection function to return app state.
+
+    Use as:
+
+      @router.get("/")
+      def get_endpoint(app_state: AppStateDep):
+            ... app_state.cfg
+
+    """
+    return get_app_state(request.app)
+
+
+AppStateDep = Annotated[AppState, Depends(databutton_app_state)]
+
+
+
 import time
 from threading import Event
 from typing import Annotated, Callable

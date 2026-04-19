@@ -526,7 +526,7 @@ export const CommunityDashboard: FC = () => {
         />
         <div className="flex justify-center mb-8">
           <motion.img
-            src="https://static.databutton.com/public/65360aa8-19c8-4d03-b56c-9401fdbd71f8/Diverse_hands_gently_placing_coins_and_bills_into_a_glowing_donation_box_shaped_like_a_heart_In_the_background_subtly_depict_scenes_of_community_uplift_children_learning_people_receiving_food_aid_and_a_thriving_co.png"
+            src="/images/community-donation.png"
             alt="Bertie Foundation"
             className="h-24 w-auto"
             initial={{ opacity: 0, scale: 0.5 }}

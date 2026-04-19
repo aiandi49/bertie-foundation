@@ -1,3 +1,5 @@
+backend/app/internal/extensions/google_scheduler_auth.py
+
 from .auth import AuthConfig
 
 # TODO: We should probably use a generic oidc client instead and get better caching etc

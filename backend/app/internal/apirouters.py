@@ -1,3 +1,9 @@
+backend/app/internal/apirouters.py
+
+HAS_AUTH_TAG = "dbtn/hasAuth"
+MODULE_TAG = "dbtn/module"
+
+
 import time
 from collections import Counter
 

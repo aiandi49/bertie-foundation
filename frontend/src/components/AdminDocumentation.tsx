@@ -244,7 +244,7 @@ export function AdminDocumentation() {
                   <li><strong>Moderation notifications:</strong> Sent to users when their content is approved or rejected</li>
                 </ol>
                 <p className="mb-4">
-                  All emails use pre-defined templates based on the type of form or action. Emails are sent through the Databutton email service.
+                  All emails use pre-defined templates based on the type of form or action. Emails are sent through the configured SMTP email service.
                 </p>
 
                 <h3 className="text-2xl font-bold text-white mt-8 mb-4">Testing Email Notifications</h3>

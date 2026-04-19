@@ -17,7 +17,8 @@ class Mode(str, Enum):
     PROD = "production"
 
 
-mode = Mode.PROD if os.environ.get("DATABUTTON_SERVICE_TYPE") == "prodx" else Mode.DEV
+# Default to PROD for standalone deployment; override with ENVIRONMENT=development for local dev
+mode = Mode.DEV if os.environ.get("ENVIRONMENT", "production") == "development" else Mode.PROD
 
 __all__ = [
     "Mode",

@@ -1,3 +1,5 @@
+backend/app/internal/mw/auth_mw.py
+
 import functools
 import json
 import os
@@ -690,7 +692,7 @@ def get_extra_stack_auth_metadata(
             "publishableClientKey"
         )
     else:
-        # Get stackauth config from databutton extension
+        # Get stackauth config from extension
         try:
             for ext in json.loads(os.environ.get("DATABUTTON_EXTENSIONS", "")):
                 if ext["name"] == "stack-auth":
