@@ -98,7 +98,7 @@ class DevxClient:
         return False
 
     def _post_devx_sync(self, path: str, params: BaseModel | None = None):
-        """Make post request endpoint in internal devx server."""
+        """Make post request an endpoint in internal devx server."""
         client = self._get_devx_client()
         if client is None:
             # If we don't have a sync client use the async client,
