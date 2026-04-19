@@ -41,9 +41,6 @@ This README provides technical reference and overview.
 Backend environment variables are split across three files:
 
 ### `.env` (Shared)
-- `DATABUTTON_PROJECT_ID`: Your project ID
-- `DATABUTTON_CUSTOM_DOMAIN`: Custom domain configuration
-- `DATABUTTON_EXTENSIONS`: Extension configuration
 
 ### `.env.dev` (Development)
 - Development-specific secrets (database URLs, API keys, etc.)
