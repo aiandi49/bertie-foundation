@@ -67,26 +67,26 @@ export default function App() {
               className="grid grid-cols-2 gap-10 mt-1 sm:mt-0"
             >
               <OptimizedImage
-                src="/public/6e585a83-81ae-4d9b-8d1e-2f72d5932a31/1.jpg"
+                src="https://zubughdeldzdujuwtcyz.supabase.co/storage/v1/object/public/images/1.jpg"
                 alt="Bertie Foundation volunteers"
                 className="w-full h-auto object-cover rounded-lg shadow-lg"
                 objectFit="cover"
                 priority={true} 
               />
               <OptimizedImage
-                src="/public/6e585a83-81ae-4d9b-8d1e-2f72d5932a31/2.jpg"
+                src="https://zubughdeldzdujuwtcyz.supabase.co/storage/v1/object/public/images/2.jpg"
                 alt="Bertie Foundation donation drive"
                 className="w-full h-auto aspect-video rounded-lg shadow-lg object-cover"
                 objectFit="cover"
               />
               <OptimizedImage
-                src="/public/6e585a83-81ae-4d9b-8d1e-2f72d5932a31/3.jpg"
+                src="https://zubughdeldzdujuwtcyz.supabase.co/storage/v1/object/public/images/3.jpg"
                 alt="Community support program"
                 className="w-full h-auto aspect-video rounded-lg shadow-lg object-cover"
                 objectFit="cover" 
               />
               <OptimizedImage
-                src="/public/6e585a83-81ae-4d9b-8d1e-2f72d5932a31/4.jpg"
+                src="https://zubughdeldzdujuwtcyz.supabase.co/storage/v1/object/public/images/4.jpg"
                 alt="Children receiving donations"
                 className="w-full h-auto aspect-video rounded-lg shadow-lg object-cover" 
                 objectFit="cover" 

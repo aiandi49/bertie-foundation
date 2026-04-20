@@ -50,7 +50,7 @@ export default function Pictures() {
   const criticalResources = {
     images: [
       // Preload hero background
-      '/public/6e585a83-81ae-4d9b-8d1e-2f72d5932a31/hero-bg.jpg',
+      'https://zubughdeldzdujuwtcyz.supabase.co/storage/v1/object/public/images/hero-bg.jpg',
       // We'll dynamically add important album covers and images later
     ],
     pages: [
@@ -331,7 +331,7 @@ export default function Pictures() {
           {/* Hero Section */}
           <div className="relative py-16 overflow-hidden">  {/* Reduced from py-24 to py-16 */}
             {/* Background Effects */}
-            <div className="absolute inset-0 bg-[url('/public/6e585a83-81ae-4d9b-8d1e-2f72d5932a31/hero-bg.jpg')] opacity-10 bg-cover bg-center" />
+            <div className="absolute inset-0 bg-[url('https://zubughdeldzdujuwtcyz.supabase.co/storage/v1/object/public/images/hero-bg.jpg')] opacity-10 bg-cover bg-center" />
             <div className="absolute inset-0 bg-gradient-to-b from-primary-900/50 via-transparent to-primary-800/50" />
             
             {/* Animated Background */}

@@ -73,7 +73,7 @@ export default function WhoIsBertie() {
                 className="w-full flex justify-center mb-6 md:float-right md:w-auto md:ml-8 md:mb-4"
               >
                 <img
-                  src="/public/6e585a83-81ae-4d9b-8d1e-2f72d5932a31/Headshot.jpg"
+                  src="https://zubughdeldzdujuwtcyz.supabase.co/storage/v1/object/public/images/Headshot.jpg"
                   alt="Bertie Geneva Rogers"
                   className="w-48 h-48 md:w-48 md:h-48 object-cover rounded-xl shadow-lg border-4 border-white/20"
                 />
