@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 import uuid
+import threading
 from app.db.supabase_client import supabase_available, get_supabase
 from app.apis.email_notifications import send_form_notifications
 
@@ -45,9 +46,13 @@ def submit_contact(request: ContactRequest) -> ContactResponse:
         except Exception as e:
             print(f"DB save error (non-fatal): {e}")
 
-    # Always try to send email notification
+    # Always try to send email notification — in background so response is instant
     try:
-        send_form_notifications("contact_form", {**contact_data})
+        threading.Thread(
+            target=send_form_notifications,
+            args=("contact_form", {**contact_data}),
+            daemon=True
+        ).start()
     except Exception as e:
         print(f"Email notification error (non-fatal): {e}")
 
