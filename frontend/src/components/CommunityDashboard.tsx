@@ -117,7 +117,11 @@ const metrics = [
   { 
     icon: Target,
     label: "Success Rate",
-    value: (stats: CommunityStats) => `${Math.round(stats.program_impacts.reduce((acc, curr) => acc + curr.success_rate, 0) / stats.program_impacts.length * 100)}%`,
+    value: (stats: CommunityStats) => {
+      const impacts = stats.program_impacts || [];
+      if (impacts.length === 0) return "N/A";
+      return `${Math.round(impacts.reduce((acc, curr) => acc + curr.success_rate, 0) / impacts.length * 100)}%`;
+    },
     detail: "Program effectiveness"
   }
 ];
@@ -661,7 +665,7 @@ export const CommunityDashboard: FC = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* Program Impact Cards */}
-          {stats.program_impacts.map((impact, index) => (
+          {(stats.program_impacts || []).map((impact, index) => (
             <div
               key={index}
               className="bg-secondary-700/50 p-4 rounded-lg transform hover:scale-105 transition-all duration-300"
@@ -813,7 +817,7 @@ export const CommunityDashboard: FC = () => {
           Program Impact Distribution
         </h3>
         <div className="space-y-4">
-          {Object.entries(stats.program_distribution).map(([program, count]) => (
+          {Object.entries(stats.program_distribution || {}).map(([program, count]) => (
             <div key={program} className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-300 capitalize">
