@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Body
 from pydantic import BaseModel
 from enum import Enum
 from typing import List, Optional, Dict, Any
@@ -53,7 +53,7 @@ def _send_email(to: str, subject: str, html: str):
 @router.post("/submit")
 async def submit_content(
     content_type: ContentType = Query(...),
-    data: Dict[str, Any] = None
+    data: Dict[str, Any] = Body(None)
 ) -> ModerationResponse:
     try:
         submission_id = str(uuid.uuid4())
