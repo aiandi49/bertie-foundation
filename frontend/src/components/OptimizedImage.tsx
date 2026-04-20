@@ -50,7 +50,7 @@ export function OptimizedImage({
   const imageSizes = [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840];
 
   // Generate the srcset attribute
-  const srcSet = generateSrcSet(imgSrc, imageSizes);
+  const srcSet = imgSrc.includes('supabase.co') ? '' : generateSrcSet(imgSrc, imageSizes);
   
   // Add quality parameter if needed
   const qualityMap = {
