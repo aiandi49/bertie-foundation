@@ -3,6 +3,7 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import List
 import uuid
+import threading
 from app.db.supabase_client import supabase_available, get_supabase
 from app.apis.email_notifications import send_form_notifications
 
@@ -48,7 +49,11 @@ def submit_volunteer_application(request: VolunteerRequest) -> VolunteerResponse
             print(f"DB save error (non-fatal): {e}")
 
     try:
-        send_form_notifications("volunteer_application", {**data})
+        threading.Thread(
+            target=send_form_notifications,
+            args=("volunteer_application", {**data}),
+            daemon=True
+        ).start()
     except Exception as e:
         print(f"Notification error (non-fatal): {e}")
 
