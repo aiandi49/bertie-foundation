@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 import uuid
+import threading
 from app.db.supabase_client import supabase_available, get_supabase
 from app.apis.email_notifications import send_form_notifications
 
@@ -43,7 +44,11 @@ def submit_feedback(feedback: FeedbackRequest) -> FeedbackResponse:
             print(f"DB save error (non-fatal): {e}")
 
     try:
-        send_form_notifications("feedback", {**data})
+        threading.Thread(
+            target=send_form_notifications,
+            args=("feedback", {**data}),
+            daemon=True
+        ).start()
     except Exception as e:
         print(f"Notification error (non-fatal): {e}")
 
