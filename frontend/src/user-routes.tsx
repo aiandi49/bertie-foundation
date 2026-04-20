@@ -87,7 +87,7 @@ export const userRoutes: RouteObject[] = [
 	{ path: "/unsubscribe", element: <Unsubscribe /> },
 	{ path: "/videos", element: <Videos /> },
 	{ path: "/vision", element: <Vision /> },
-	{ path: "/volunteer", element: <CommunityImpact /> },
+	{ path: "/volunteer", element: <ContactUs /> },
 	{ path: "/who-is-bertie", element: <WhoIsBertie /> },
 	{ path: "/whoisbertie", element: <WhoIsBertie /> },
 
