@@ -37,7 +37,7 @@ def create_app() -> FastAPI:
     # CORS - allow frontend origins
     allowed_origins = os.environ.get(
         "ALLOWED_ORIGINS",
-        "http://localhost:5173,http://localhost:3000,http://localhost:8080"
+        "http://localhost:5173,http://localhost:3000,http://localhost:8080,https://www.bertiefoundation.org,https://bertiefoundation.org,https://bertie-foundation.vercel.app,https://bertie-foundation-production.up.railway.app"
     ).split(",")
 
     # In production, add your actual domain(s) to ALLOWED_ORIGINS env var
