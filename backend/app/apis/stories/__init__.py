@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List
 import uuid
+import threading
 from app.apis.email_notifications import send_form_notifications
 from app.db.supabase_client import get_supabase
 
@@ -26,7 +27,11 @@ def submit_success_story(story: SuccessStoryRequest) -> dict:
         data = {"id": story_id, "title": story.title, "story": story.story, "program": story.program, "impact": story.impact, "name": story.name, "email": story.email, "image_url": story.imageUrl, "tags": story.tags or [], "status": "pending", "timestamp": datetime.now().isoformat()}
         supabase.table("success_stories").insert(data).execute()
         try:
-            send_form_notifications("success_story", {**data})
+            threading.Thread(
+                target=send_form_notifications,
+                args=("success_story", {**data}),
+                daemon=True
+            ).start()
         except Exception as e:
             print(f"Notification error: {e}")
         return {"message": "Thank you for sharing your story!", "id": story_id}
