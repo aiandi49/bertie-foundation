@@ -142,8 +142,6 @@ const allActiveMembers = [
   { name: "Lenny Yarde", title: "Member", imageUrl: "" },
   { name: "Maurice Mitchell", nickname: "M&M", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/maurice.jpeg" },
   { name: "Michael Alfred", nickname: "Mike", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/mike.jpeg" },
-  { name: "Michael J", title: "Member", imageUrl: "" },
-  { name: "Michael Taylor", title: "Member", imageUrl: "" },
   { name: "Mike Henry", title: "Member", imageUrl: "" },
   { name: "Mike Popp", title: "Member", imageUrl: "" },
   { name: "Nnamdi Samuels", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/nnamdi.jpeg" },
