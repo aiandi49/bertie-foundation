@@ -74,7 +74,7 @@ export default function App() {
                 priority={true} 
               />
               <OptimizedImage
-                src="https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/2.jpeg"
+                src="https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/2b.jpeg"
                 alt="Bertie Foundation donation drive"
                 className="w-full h-auto aspect-video rounded-lg shadow-lg object-cover"
                 objectFit="cover"
