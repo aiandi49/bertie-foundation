@@ -136,7 +136,7 @@ const allActiveMembers = [
   { name: "Dyrick Fowler", nickname: "Dee", title: "Member", imageUrl: "" },
   { name: "Fang Chokchai", title: "Member", imageUrl: "" },
   { name: "Gregory Faison", title: "Member", imageUrl: "" },
-  { name: "Harold W Hill Jr", nickname: "JR", title: "Member", imageUrl: "" },
+  { name: "Harold W Hill Jr", nickname: "JR", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/jr.jpeg" },
   { name: "Jefferey Norris", title: "Member", imageUrl: "" },
   { name: "Koi Sudwisai", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/koi.jpeg" },
   { name: "Lenny Yarde", title: "Member", imageUrl: "" },
