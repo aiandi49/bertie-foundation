@@ -252,7 +252,7 @@ export default function Members() {
               {/* Image container */} 
               <div className="relative w-full h-full flex justify-center items-center"> {/* Container for image */}
                 <img
-                  src="/images/bertie-logo.jpg"
+                  src="https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/memberlogo.jpeg"
                   alt="Bertie Foundation Highlight"
                   className="h-full w-auto object-contain rounded-xl border-4 border-white/20 bg-white/10" // Fill container, object-contain
                 />
