@@ -125,7 +125,7 @@ const allActiveMembers = [
   // Existing Members
   { name: "Anthony Franklin", nickname: "Tony", title: "Member", imageUrl: "" },
   { name: "Anna Chalk", title: "Member", imageUrl: "" },
-  { name: "Auggie Karcher", title: "Member", imageUrl: "" },
+  { name: "Auggie Karcher", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/auggie.jpeg" },
   { name: "Bernard Smith", title: "Member", imageUrl: "" },
   { name: "Carl Lockett", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/carl.jpeg" },
   { name: "Carol Popp", title: "Member", imageUrl: "" },
