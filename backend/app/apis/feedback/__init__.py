@@ -5,7 +5,7 @@ from typing import Optional
 import uuid
 import threading
 from app.db.supabase_client import supabase_available, get_supabase
-from app.apis.email_notifications import send_form_notifications
+from app.apis.email_notifications import send_form_notifications, get_admin_emails
 
 router = APIRouter()
 
@@ -34,19 +34,22 @@ def submit_feedback(feedback: FeedbackRequest) -> FeedbackResponse:
         "category": feedback.category,
         "email": feedback.email,
         "created_at": now.isoformat(),
+        "submitted_at": now.isoformat(),
         "status": "pending",
     }
 
     if supabase_available():
         try:
-            get_supabase().table("feedback").insert(data).execute()
+            get_supabase().table("feedback").insert({k: v for k, v in data.items() if k != "submitted_at"}).execute()
         except Exception as e:
             print(f"DB save error (non-fatal): {e}")
+    else:
+        print("WARNING: Supabase not configured - feedback not saved to DB")
 
     try:
         threading.Thread(
             target=send_form_notifications,
-            args=("feedback", {**data}),
+            args=("feedback", {**data}, get_admin_emails()),
             daemon=True
         ).start()
     except Exception as e:

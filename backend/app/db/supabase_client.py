@@ -11,8 +11,8 @@ def get_supabase():
         key = os.environ.get("SUPABASE_SERVICE_KEY") or os.environ.get("SUPABASE_KEY")
         if not url or not key:
             raise RuntimeError(
-                "SUPABASE_URL and SUPABASE_SERVICE_KEY are not configured. "
-                "Add them to your .env file to enable database storage."
+                "SUPABASE_URL and SUPABASE_SERVICE_KEY are not set. "
+                "Add them to your Railway environment variables."
             )
         from supabase import create_client
         _supabase = create_client(url, key)

@@ -5,7 +5,7 @@ from typing import List
 import uuid
 import threading
 from app.db.supabase_client import supabase_available, get_supabase
-from app.apis.email_notifications import send_form_notifications
+from app.apis.email_notifications import send_form_notifications, get_admin_emails
 
 router = APIRouter()
 
@@ -47,11 +47,13 @@ def submit_volunteer_application(request: VolunteerRequest) -> VolunteerResponse
             get_supabase().table("volunteer_applications").insert(data).execute()
         except Exception as e:
             print(f"DB save error (non-fatal): {e}")
+    else:
+        print("WARNING: Supabase not configured - volunteer application not saved to DB")
 
     try:
         threading.Thread(
             target=send_form_notifications,
-            args=("volunteer_application", {**data}),
+            args=("volunteer_application", {**data}, get_admin_emails()),
             daemon=True
         ).start()
     except Exception as e:

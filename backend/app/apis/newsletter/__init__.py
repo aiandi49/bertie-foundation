@@ -1,18 +1,13 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel, EmailStr, validator, Field
 from fastapi.responses import HTMLResponse
-import smtplib, os, uuid
+import os, uuid
 from datetime import datetime
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from app.db.supabase_client import get_supabase, supabase_available
+from app.apis.email_notifications import send_form_notifications, get_admin_emails
 
 router = APIRouter()
 
-SMTP_HOST = os.environ.get("SMTP_HOST", "mail.bertiefoundation.org")
-SMTP_PORT = 465
-SMTP_EMAIL = os.environ.get("SMTP_EMAIL", "info@bertiefoundation.org")
-SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
 APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://bertiefoundation.org")
 
 
@@ -44,58 +39,13 @@ class SubscribersListResponse(BaseModel):
     subscribers: list[SubscriberResponse] = []
 
 
-def send_email(to: str, subject: str, html_content: str):
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = f"Bertie Foundation <{SMTP_EMAIL}>"
-        msg["To"] = to
-        msg.attach(MIMEText(html_content, "html"))
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=15) as server:
-            server.login(SMTP_EMAIL, SMTP_PASSWORD)
-            server.sendmail(SMTP_EMAIL, to, msg.as_string())
-    except Exception as e:
-        print(f"Email error: {e}")
-
-
-def send_admin_notification(name, email, source, subscribed_at):
-    html = f"""<html><body>
-    <h2>New Newsletter Subscriber</h2>
-    <p><strong>Name:</strong> {name or 'Not provided'}</p>
-    <p><strong>Email:</strong> {email}</p>
-    <p><strong>Source:</strong> {source}</p>
-    <p><strong>Subscribed at:</strong> {subscribed_at}</p>
-    </body></html>"""
-    send_email("info@bertiefoundation.org", f"New Newsletter Subscriber: {name or email}", html)
-
-
-def send_welcome_email(name, email, source, subscribed_at, unsubscribe_url):
-    display_name = name or "Friend"
-    html = f"""<html><body style="font-family:Arial,sans-serif;background:#f3f4f6;">
-    <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;">
-        <div style="background:#8B0000;color:white;padding:30px;text-align:center;">
-            <h1>Welcome to the Bertie Foundation!</h1>
-        </div>
-        <div style="padding:30px;">
-            <h2>Dear {display_name},</h2>
-            <p>We are thrilled to have you as part of the Bertie Foundation family!</p>
-            <p>You'll be the first to know about volunteer opportunities, impact stories, community events, and more.</p>
-            <p style="text-align:center;"><a href="{APP_BASE_URL}" style="background:#8B0000;color:white;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:bold;">Visit Our Website</a></p>
-        </div>
-        <div style="text-align:center;padding:20px;font-size:12px;color:#9ca3af;">
-            <a href="{unsubscribe_url}">Unsubscribe</a>
-        </div>
-    </div></body></html>"""
-    send_email(email, "Welcome to the Bertie Foundation Newsletter! 🌟", html)
-
-
 @router.get("/get-subscribers")
 async def get_all_subscribers() -> SubscribersListResponse:
     if not supabase_available():
         return SubscribersListResponse(subscribers=[])
     try:
         supabase = get_supabase()
-        result = supabase.table("newsletter_subscribers").select("*").execute()
+        result = supabase.table("newsletter_subscribers").select("*").order("subscribed_at", desc=True).execute()
         subs = [SubscriberResponse(
             id=s.get("id", str(uuid.uuid4())),
             name=s.get("name"),
@@ -117,13 +67,13 @@ def subscribe_to_newsletter(
     sub_id = str(uuid.uuid4())
     subscribed_at = datetime.utcnow().isoformat()
 
-    # Save to DB if available
+    # Save to Supabase
     if supabase_available():
         try:
             supabase = get_supabase()
             existing = supabase.table("newsletter_subscribers").select("id").eq("email", body.email).execute()
             if existing.data:
-                return NewsletterSubscriptionResponse(status="success", message="This email is already subscribed.")
+                return NewsletterSubscriptionResponse(status="success", message="You are already subscribed!")
             sub = {
                 "id": sub_id,
                 "name": body.name,
@@ -135,26 +85,43 @@ def subscribe_to_newsletter(
             supabase.table("newsletter_subscribers").insert(sub).execute()
         except Exception as e:
             print(f"DB error (non-fatal): {e}")
+    else:
+        print("WARNING: Supabase not configured - newsletter subscriber not saved to DB")
 
-    unsubscribe_url = f"{APP_BASE_URL}/unsubscribe/{sub_id}"
-    background_tasks.add_task(send_admin_notification, body.name, body.email, body.source, subscribed_at)
-    background_tasks.add_task(send_welcome_email, body.name, body.email, body.source, subscribed_at, unsubscribe_url)
+    # Send welcome email to subscriber + admin notification
+    form_data = {
+        "id": sub_id,
+        "name": body.name or "Friend",
+        "email": body.email,
+        "source": body.source,
+        "submitted_at": subscribed_at,
+    }
+    background_tasks.add_task(send_form_notifications, "newsletter", form_data, get_admin_emails())
 
-    return NewsletterSubscriptionResponse(status="success", message="Thank you for subscribing!")
+    return NewsletterSubscriptionResponse(status="success", message="Thank you for subscribing! Check your email for a welcome message.")
 
 
 @router.get("/unsubscribe/{subscriber_id}", response_class=HTMLResponse)
 async def unsubscribe_user(subscriber_id: str):
+    base = APP_BASE_URL
     if not supabase_available():
-        return HTMLResponse("<html><body><h1>You have been unsubscribed.</h1></body></html>")
+        return HTMLResponse(f"""<!DOCTYPE html><html><body style="font-family:Arial;text-align:center;padding:60px;">
+        <h1>Unsubscribed</h1><p>You have been removed from our mailing list.</p>
+        <a href="{base}">Return to Bertie Foundation</a></body></html>""")
     try:
         supabase = get_supabase()
         result = supabase.table("newsletter_subscribers").update({"status": "unsubscribed"}).eq("id", subscriber_id).execute()
         if not result.data:
-            return HTMLResponse("<html><body><h1>Subscription Not Found</h1></body></html>", status_code=404)
-        return HTMLResponse("<html><body><h1>You have been unsubscribed.</h1><p>We're sorry to see you go.</p></body></html>")
+            return HTMLResponse(f"""<!DOCTYPE html><html><body style="font-family:Arial;text-align:center;padding:60px;">
+            <h1>Not Found</h1><p>That subscription link was not found.</p>
+            <a href="{base}">Return to Bertie Foundation</a></body></html>""", status_code=404)
+        return HTMLResponse(f"""<!DOCTYPE html><html><body style="font-family:Arial;text-align:center;padding:60px;">
+        <h1 style="color:#8B0000;">You have been unsubscribed.</h1>
+        <p>We're sorry to see you go. You have been removed from the Bertie Foundation newsletter.</p>
+        <a href="{base}" style="background:#8B0000;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;">Return to Our Website</a>
+        </body></html>""")
     except Exception as e:
-        return HTMLResponse("<html><body><h1>An error occurred.</h1></body></html>", status_code=500)
+        return HTMLResponse("<html><body><h1>An error occurred. Please try again later.</h1></body></html>", status_code=500)
 
 
 @router.delete("/subscriber/{subscriber_id}")
