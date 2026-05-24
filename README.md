@@ -97,7 +97,7 @@ This exported code doesn't include:
 ## Deployment
 
 This app can be deployed to:
-- Vercel (frontend) + Railway (backend)
+- Vercel (frontend) + Render (backend)
 - fly.io
 - Google Cloud Run
 - AWS
