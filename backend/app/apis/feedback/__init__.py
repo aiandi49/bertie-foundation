@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 import uuid
-import threading
 from app.db.supabase_client import supabase_available, get_supabase
 from app.apis.email_notifications import send_form_notifications, get_admin_emails
 
@@ -47,11 +46,7 @@ def submit_feedback(feedback: FeedbackRequest) -> FeedbackResponse:
         print("WARNING: Supabase not configured - feedback not saved to DB")
 
     try:
-        threading.Thread(
-            target=send_form_notifications,
-            args=("feedback", {**data}, get_admin_emails()),
-            daemon=True
-        ).start()
+        send_form_notifications("feedback", {**data}, get_admin_emails())
     except Exception as e:
         print(f"Notification error (non-fatal): {e}")
 

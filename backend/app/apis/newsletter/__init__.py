@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr, validator, Field
 from fastapi.responses import HTMLResponse
 import os, uuid
@@ -61,7 +61,7 @@ async def get_all_subscribers() -> SubscribersListResponse:
 
 @router.post("/subscribe-to-newsletter")
 def subscribe_to_newsletter(
-    background_tasks: BackgroundTasks,
+
     body: NewsletterSubscriptionRequest,
 ) -> NewsletterSubscriptionResponse:
     sub_id = str(uuid.uuid4())
@@ -96,7 +96,7 @@ def subscribe_to_newsletter(
         "source": body.source,
         "submitted_at": subscribed_at,
     }
-    background_tasks.add_task(send_form_notifications, "newsletter", form_data, get_admin_emails())
+    send_form_notifications("newsletter", form_data, get_admin_emails())
 
     return NewsletterSubscriptionResponse(status="success", message="Thank you for subscribing! Check your email for a welcome message.")
 

@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 import uuid
-import threading
 from app.db.supabase_client import supabase_available, get_supabase
 from app.apis.email_notifications import send_form_notifications, get_admin_emails
 
@@ -39,7 +38,6 @@ def submit_contact(request: ContactRequest) -> ContactResponse:
         "status": "received",
     }
 
-    # Save to Supabase
     if supabase_available():
         try:
             get_supabase().table("contact_requests").insert(contact_data).execute()
@@ -48,13 +46,8 @@ def submit_contact(request: ContactRequest) -> ContactResponse:
     else:
         print("WARNING: Supabase not configured - contact form not saved to DB")
 
-    # Email admin + user confirmation
     try:
-        threading.Thread(
-            target=send_form_notifications,
-            args=("contact_form", {**contact_data}, get_admin_emails()),
-            daemon=True
-        ).start()
+        send_form_notifications("contact_form", {**contact_data}, get_admin_emails())
     except Exception as e:
         print(f"Email notification error (non-fatal): {e}")
 

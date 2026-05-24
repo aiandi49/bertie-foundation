@@ -3,7 +3,6 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import List
 import uuid
-import threading
 from app.db.supabase_client import supabase_available, get_supabase
 from app.apis.email_notifications import send_form_notifications, get_admin_emails
 
@@ -51,11 +50,7 @@ def submit_volunteer_application(request: VolunteerRequest) -> VolunteerResponse
         print("WARNING: Supabase not configured - volunteer application not saved to DB")
 
     try:
-        threading.Thread(
-            target=send_form_notifications,
-            args=("volunteer_application", {**data}, get_admin_emails()),
-            daemon=True
-        ).start()
+        send_form_notifications("volunteer_application", {**data}, get_admin_emails())
     except Exception as e:
         print(f"Notification error (non-fatal): {e}")
 

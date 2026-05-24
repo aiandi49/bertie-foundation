@@ -3,18 +3,12 @@ from pydantic import BaseModel
 from enum import Enum
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-import smtplib, os, uuid, threading
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import uuid
 from app.db.supabase_client import get_supabase, supabase_available
-from app.apis.email_notifications import send_form_notifications
+from app.apis.email_notifications import send_form_notifications, send_email, EmailNotification
 
 router = APIRouter(prefix="/moderation")
 
-SMTP_HOST = os.environ.get("SMTP_HOST", "mail.bertiefoundation.org")
-SMTP_PORT = 465
-SMTP_FROM = os.environ.get("SMTP_EMAIL", "info@bertiefoundation.org")
-SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
 
 class ContentType(str, Enum):
     Feedback = "feedback"
@@ -22,9 +16,11 @@ class ContentType(str, Enum):
     Volunteer = "volunteer"
     Contact = "contact"
 
+
 class ModerationAction(str, Enum):
     APPROVE = "approve"
     REJECT = "reject"
+
 
 class ModerationActionRequest(BaseModel):
     content_id: str
@@ -32,23 +28,12 @@ class ModerationActionRequest(BaseModel):
     notify_user: bool = True
     message: Optional[str] = None
 
+
 class ModerationResponse(BaseModel):
     success: bool
     message: str
     content_id: Optional[str] = None
 
-def _send_email(to: str, subject: str, html: str):
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = f"Bertie Foundation <{SMTP_FROM}>"
-        msg["To"] = to
-        msg.attach(MIMEText(html, "html"))
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as s:
-            s.login(SMTP_FROM, SMTP_PASSWORD)
-            s.sendmail(SMTP_FROM, to, msg.as_string())
-    except Exception as e:
-        print(f"Email error: {e}")
 
 @router.post("/submit")
 async def submit_content(
@@ -75,13 +60,8 @@ async def submit_content(
             except Exception as e:
                 print(f"DB save error (non-fatal): {e}")
 
-        # Send email notification in background
         try:
-            threading.Thread(
-                target=send_form_notifications,
-                args=(content_type.value, {**record, "submitted_at": now}),
-                daemon=True
-            ).start()
+            send_form_notifications(content_type.value, {**record, "submitted_at": now})
         except Exception as e:
             print(f"Notification error (non-fatal): {e}")
 
@@ -93,6 +73,7 @@ async def submit_content(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/pending")
 async def get_pending_submissions() -> dict:
     try:
@@ -102,17 +83,26 @@ async def get_pending_submissions() -> dict:
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.post("/action")
 async def take_moderation_action(request: ModerationActionRequest) -> ModerationResponse:
     try:
         supabase = get_supabase()
         new_status = "approved" if request.action == ModerationAction.APPROVE else "rejected"
-        result = supabase.table("moderation_submissions").update({"status": new_status, "moderated_at": datetime.now().isoformat(), "admin_notes": request.message}).eq("id", request.content_id).execute()
+        result = supabase.table("moderation_submissions").update({
+            "status": new_status,
+            "moderated_at": datetime.now().isoformat(),
+            "admin_notes": request.message
+        }).eq("id", request.content_id).execute()
         if not result.data:
             return ModerationResponse(success=False, message="Submission not found")
         sub = result.data[0]
         if request.notify_user and sub.get("email"):
-            _send_email(sub["email"], f"Your submission has been {new_status}", f"<p>Your submission has been <strong>{new_status}</strong>.</p>")
+            send_email(EmailNotification(
+                to=sub["email"],
+                subject=f"Your submission has been {new_status}",
+                content_html=f"<p>Your submission has been <strong>{new_status}</strong>.</p>"
+            ))
         return ModerationResponse(success=True, message=f"Submission {new_status}", content_id=request.content_id)
     except Exception as e:
         return ModerationResponse(success=False, message=str(e))
