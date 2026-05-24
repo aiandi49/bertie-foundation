@@ -1,17 +1,13 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Dict, Literal, Optional, List
-import smtplib, os, json
+import os, json, urllib.request, urllib.error
 from datetime import datetime
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 
 router = APIRouter()
 
-SMTP_HOST = os.environ.get("SMTP_HOST", "mail.bertiefoundation.org")
-SMTP_PORT = int(os.environ.get("SMTP_PORT", "465"))
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 SMTP_FROM = os.environ.get("SMTP_EMAIL", "info@bertiefoundation.org")
-SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
 APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://bertiefoundation.org")
 
 # Admin recipients - read from env, fallback to known addresses
@@ -45,25 +41,33 @@ class EmailNotification(BaseModel):
 
 
 def send_email(notification: EmailNotification) -> bool:
-    if not SMTP_PASSWORD:
-        print("SMTP_PASSWORD not set — skipping email send")
+    if not RESEND_API_KEY:
+        print("RESEND_API_KEY not set — skipping email send")
         return False
     try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = notification.subject
-        msg["From"] = f"Bertie Foundation <{SMTP_FROM}>"
-        msg["To"] = notification.to
         html_body = notification.content_html
         if not html_body.strip().lower().startswith("<!doctype") and "<html" not in html_body.lower():
             html_body = f"""<!DOCTYPE html><html><head><meta charset="UTF-8"/></head><body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,sans-serif;">{html_body}</body></html>"""
-        msg.attach(MIMEText(html_body, "html"))
-        if notification.content_text:
-            msg.attach(MIMEText(notification.content_text, "plain"))
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=15) as server:
-            server.login(SMTP_FROM, SMTP_PASSWORD)
-            server.sendmail(SMTP_FROM, notification.to, msg.as_string())
-        print(f"Email sent to {notification.to}")
-        return True
+
+        payload = json.dumps({
+            "from": f"Bertie Foundation <{SMTP_FROM}>",
+            "to": [notification.to],
+            "subject": notification.subject,
+            "html": html_body,
+        }).encode("utf-8")
+
+        req = urllib.request.Request(
+            "https://api.resend.com/emails",
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            print(f"Email sent to {notification.to} — status {resp.status}")
+            return True
     except Exception as e:
         print(f"Email error to {notification.to}: {e}")
         return False
