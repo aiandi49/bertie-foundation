@@ -126,8 +126,7 @@ export default function Feedback() {
                             email: feedback.email || null
                           });
                           
-                          const responseData = await response.json();
-                          console.log("Feedback API response:", responseData);
+                          console.log("Feedback API response:", response.data);
                         } catch (submitError) {
                           console.error("Error submitting to API:", submitError);
                           throw new Error("Failed to submit feedback to API");

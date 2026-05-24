@@ -107,10 +107,7 @@ export default function ShareStory() {
                     }
                   );
                   
-                  if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || "Failed to submit success story");
-                  }
+                  // If we get here, the request succeeded (errors are thrown by the HTTP client)
                   
                   // Also save to local storage for backup/fallback
                   await FormService.submitSuccessStory({

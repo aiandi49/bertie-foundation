@@ -38,19 +38,14 @@ export function Footer() {
         source: 'footer'
       });
       
-      const data = await response.json();
+      const data = response.data;
       console.log('Subscription response:', data);
-      
-      if (data.status === 'error') {
-        setError(data.message);
-        return;
-      }
       
       // Clear form fields
       setName('');
       setEmail('');
 
-      if (data.message.includes("already subscribed")) {
+      if (data?.message?.includes("already subscribed")) {
         // Set a specific success message for already subscribed users and do not show modal
         setSuccess(`You are already subscribed. Please check your inbox for confirmation.`);
         setShowSuccessModal(false); 
@@ -61,8 +56,8 @@ export function Footer() {
       }
     } catch (error: any) {
       console.error('Subscription error:', error);
-      
-      setError('An error occurred. Please try again later.');
+      const message = error?.error?.message || error?.error?.detail || 'An error occurred. Please try again later.';
+      setError(message);
     } finally {
       setIsLoading(false);
     }

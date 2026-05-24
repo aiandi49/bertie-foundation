@@ -193,7 +193,7 @@ export const CommunityDashboard: FC = () => {
       setSectionLoading({ metrics: true, impacts: true, stories: true });
 
       const response = await apiClient.get_community_stats();
-      const data = await response.json();
+      const data = response.data;
 
       // Simulate staggered loading for better UX
       setTimeout(() => setSectionLoading(prev => ({ ...prev, metrics: false })), 500);

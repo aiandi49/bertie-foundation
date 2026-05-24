@@ -38,13 +38,9 @@ export default function ContactUs() {
         category: formData.category || "general"
       });
 
-      if (response.ok) {
-        setSuccess(true);
-        setFormData({ name: "", email: "", subject: "", message: "", category: "" });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to submit form");
-      }
+      // If we get here, the request succeeded (errors are thrown by the HTTP client)
+      setSuccess(true);
+      setFormData({ name: "", email: "", subject: "", message: "", category: "" });
     } catch (error) {
       console.error("Error submitting contact form:", error);
       setError("There was an error submitting your message. Please try again.");

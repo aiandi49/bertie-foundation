@@ -23,7 +23,7 @@ export default function SuccessStories() {
       try {
         // First try to get from API
         const response = await apiClient.get_success_stories();
-        const apiStories = await response.json();
+        const apiStories = response.data;
         
         if (apiStories && Array.isArray(apiStories) && apiStories.length > 0) {
           setStories(apiStories);

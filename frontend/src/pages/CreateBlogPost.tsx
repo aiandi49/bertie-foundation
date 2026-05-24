@@ -38,13 +38,11 @@ export default function CreateBlogPost() {
       try {
         setIsLoading(true);
         const response = await apiClient.get_blog_posts();
-        if (response.ok) {
-          const posts = await response.json() as BlogPost[];
-          // Extract unique tags from all posts
-          const allTags = posts.flatMap(post => post.tags || []);
-          const uniqueTags = [...new Set(allTags)];
-          setRecommendedTags(uniqueTags);
-        }
+        const posts = (response.data || []) as BlogPost[];
+        // Extract unique tags from all posts
+        const allTags = posts.flatMap(post => post.tags || []);
+        const uniqueTags = [...new Set(allTags)];
+        setRecommendedTags(uniqueTags);
       } catch (error) {
         console.error("Error fetching existing tags:", error);
       } finally {
@@ -69,21 +67,17 @@ export default function CreateBlogPost() {
         tags: formData.tags,
       });
 
-      if (response.ok) {
-        trackEvent({
-          event_type: "blog",
-          component: "create_post_form",
-          action: "submit",
-          metadata: {
-            title: formData.title,
-            category: formData.category,
-          },
-        });
-        navigate("/news-and-stories");
-      } else {
-        const data = await response.json();
-        throw new Error(data.detail || "Failed to create blog post");
-      }
+      // If we get here, the request succeeded (errors are thrown by the HTTP client)
+      trackEvent({
+        event_type: "blog",
+        component: "create_post_form",
+        action: "submit",
+        metadata: {
+          title: formData.title,
+          category: formData.category,
+        },
+      });
+      navigate("/news-and-stories");
     } catch (error) {
       console.error("Error creating blog post:", error);
       setError("Failed to create blog post. Please try again.");

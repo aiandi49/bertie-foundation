@@ -15,12 +15,7 @@ export function BlogSection() {
       try {
         setLoading(true);
         const response = await apiClient.get_blog_posts();
-        if (response.ok) {
-          const data = await response.json();
-          setPosts(data);
-        } else {
-          setError("Failed to load blog posts");
-        }
+        setPosts(response.data || []);
       } catch (err) {
         console.error("Error fetching blog posts:", err);
         setError("Failed to load blog posts");

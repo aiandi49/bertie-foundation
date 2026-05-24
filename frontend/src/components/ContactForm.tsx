@@ -44,21 +44,17 @@ export function ContactForm() {
         }
       });
 
-      if (response.ok) {
-        setSuccess(true);
-        setFormData({
-          name: "",
-          email: "",
-          subject: "",
-          message: "",
-          category: "general"
-        });
-        trackEvent("contact_form", "submit_success");
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to submit form");
-      }
-    } catch (error) {
+      // If we get here, the request succeeded (errors are thrown by the HTTP client)
+      setSuccess(true);
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+        category: "general"
+      });
+      trackEvent("contact_form", "submit_success");
+    } catch (error: any) {
       console.error("Error submitting contact form:", error);
       setError("There was an error submitting your message. Please try again.");
       trackEvent("contact_form", "submit_error");

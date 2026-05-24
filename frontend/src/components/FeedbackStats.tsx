@@ -22,8 +22,7 @@ export function FeedbackStats() {
       // Try to get stats from API first
       try {
         const response = await apiClient.get_feedback_stats();
-        const data = await response.json();
-        setStats(data);
+        setStats(response.data);
       } catch (apiError) {
         console.error("Error fetching stats from API, falling back to local storage:", apiError);
         // Fallback to local storage if API fails

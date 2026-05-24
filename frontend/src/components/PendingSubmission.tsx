@@ -61,12 +61,12 @@ export function PendingSubmission({ submission, onApprove, onReject, isLoading =
         message: message.trim() || undefined
       });
       
-      const result = await response.json();
+      const result = response.data;
       
-      if (result.success) {
+      if (result?.success) {
         onApprove(submission.id);
       } else {
-        console.error('Failed to approve submission:', result.message);
+        console.error('Failed to approve submission:', result?.message);
       }
     } catch (error) {
       console.error('Error approving submission:', error);
@@ -85,12 +85,12 @@ export function PendingSubmission({ submission, onApprove, onReject, isLoading =
         message: message.trim() || undefined
       });
       
-      const result = await response.json();
+      const result = response.data;
       
-      if (result.success) {
+      if (result?.success) {
         onReject(submission.id);
       } else {
-        console.error('Failed to reject submission:', result.message);
+        console.error('Failed to reject submission:', result?.message);
       }
     } catch (error) {
       console.error('Error rejecting submission:', error);
