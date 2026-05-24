@@ -60,14 +60,10 @@ async def get_all_subscribers() -> SubscribersListResponse:
 
 
 @router.post("/subscribe-to-newsletter")
-def subscribe_to_newsletter(
-
-    body: NewsletterSubscriptionRequest,
-) -> NewsletterSubscriptionResponse:
+def subscribe_to_newsletter(body: NewsletterSubscriptionRequest) -> NewsletterSubscriptionResponse:
     sub_id = str(uuid.uuid4())
     subscribed_at = datetime.utcnow().isoformat()
 
-    # Save to Supabase
     if supabase_available():
         try:
             supabase = get_supabase()
@@ -86,24 +82,27 @@ def subscribe_to_newsletter(
         except Exception as e:
             print(f"DB error (non-fatal): {e}")
     else:
-        print("WARNING: Supabase not configured - newsletter subscriber not saved to DB")
+        print("WARNING: Supabase not configured — newsletter subscriber not saved to DB")
 
-    # Send welcome email to subscriber + admin notification
-    form_data = {
-        "id": sub_id,
-        "name": body.name or "Friend",
-        "email": body.email,
-        "source": body.source,
-        "submitted_at": subscribed_at,
-    }
-    send_form_notifications("newsletter", form_data, get_admin_emails())
+    # Send emails — wrapped in try/except so a Resend failure doesn't 500 the endpoint
+    try:
+        form_data = {
+            "id": sub_id,
+            "name": body.name or "Friend",
+            "email": body.email,
+            "source": body.source,
+            "submitted_at": subscribed_at,
+        }
+        send_form_notifications("newsletter", form_data, get_admin_emails())
+    except Exception as e:
+        print(f"Email notification error (non-fatal): {e}")
 
     return NewsletterSubscriptionResponse(status="success", message="Thank you for subscribing! Check your email for a welcome message.")
 
 
 @router.get("/unsubscribe/{subscriber_id}", response_class=HTMLResponse)
 async def unsubscribe_user(subscriber_id: str):
-    base = APP_BASE_URL
+    base = os.environ.get("APP_BASE_URL", "https://bertiefoundation.org")
     if not supabase_available():
         return HTMLResponse(f"""<!DOCTYPE html><html><body style="font-family:Arial;text-align:center;padding:60px;">
         <h1>Unsubscribed</h1><p>You have been removed from our mailing list.</p>
@@ -117,7 +116,7 @@ async def unsubscribe_user(subscriber_id: str):
             <a href="{base}">Return to Bertie Foundation</a></body></html>""", status_code=404)
         return HTMLResponse(f"""<!DOCTYPE html><html><body style="font-family:Arial;text-align:center;padding:60px;">
         <h1 style="color:#8B0000;">You have been unsubscribed.</h1>
-        <p>We're sorry to see you go. You have been removed from the Bertie Foundation newsletter.</p>
+        <p>We are sorry to see you go. You have been removed from the Bertie Foundation newsletter.</p>
         <a href="{base}" style="background:#8B0000;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;">Return to Our Website</a>
         </body></html>""")
     except Exception as e:

@@ -1,0 +1,15 @@
+COPY THESE INTO RENDER → Your Service → Environment → Add Environment Variable
+========================================================================
+
+RESEND_API_KEY        = re_AUenRcWd_2JwMnkLkWC4unut5BrcPiTYJ
+SMTP_EMAIL            = info@bertiefoundation.org
+SUPABASE_URL          = https://zubuqhdelzdujuwtcyzx.supabase.co
+SUPABASE_SERVICE_KEY  = [GET FROM: Supabase dashboard → Project Settings → API → service_role]
+ADMIN_EMAILS          = bertiefoundation@gmail.com,msleespark@gmail.com,ai.agent.lamar@gmail.com
+APP_BASE_URL          = https://bertiefoundation.org
+ENVIRONMENT           = production
+ENV                   = prod
+ALLOWED_ORIGINS       = https://bertiefoundation.org,https://www.bertiefoundation.org,https://bertie-foundation.vercel.app
+
+IMPORTANT: Do NOT commit .env.prod to GitHub with real keys in it.
+Add .env.prod to your .gitignore file.
