@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/Layout';
-import { Mail, Users, MessageSquare, Award, Star, Shield, Phone, Globe, Trash2, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
+import { Mail, Users, MessageSquare, Award, Star, Trash2, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '../components/Button';
 import { supabase } from '../utils/supabaseClient';
 import { useAuth } from '../utils/useAuth';
@@ -13,7 +13,7 @@ interface Subscriber { id: string; name: string; email: string; status: string; 
 interface ContactReq  { id: string; name: string; email: string; subject: string; message: string; submitted_at: string; status: string; }
 interface Volunteer   { id: string; name: string; email: string; message: string; interests: any; skills: any; submitted_at: string; status: string; }
 interface Story       { id: string; name: string; email: string; title: string; story: string; program: string; impact: string; image_url: string; timestamp: string; status: string; }
-interface Feedback    { id: string; name: string; email: string; rating: number; category: string; comment: string; submitted_at: string; approved: boolean; }
+interface Feedback    { id: string; name?: string; email?: string; rating: number; category: string; comment: string; created_at: string; status: string; }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -310,7 +310,7 @@ function FeedbackTab() {
 
   const load = async () => {
     setLoading(true); setError('');
-    const { data, error } = await supabase.from('feedback').select('*').order('submitted_at', { ascending: false });
+    const { data, error } = await supabase.from('feedback').select('*').order('created_at', { ascending: false });
     if (error) setError(error.message);
     else setRows(data || []);
     setLoading(false);
@@ -326,9 +326,10 @@ function FeedbackTab() {
     setDeleting(p => ({ ...p, [id]: false }));
   };
 
-  const toggleApprove = async (id: string, current: boolean) => {
-    await supabase.from('feedback').update({ approved: !current }).eq('id', id);
-    setRows(p => p.map(r => r.id === id ? { ...r, approved: !current } : r));
+  const toggleApprove = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'approved' ? 'pending' : 'approved';
+    await supabase.from('feedback').update({ status: newStatus }).eq('id', id);
+    setRows(p => p.map(r => r.id === id ? { ...r, status: newStatus } : r));
   };
 
   const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
@@ -345,8 +346,8 @@ function FeedbackTab() {
                   {r.email && <span className="text-gray-400 ml-2 text-sm">{r.email}</span>}
                 </div>
                 <div className="flex items-center gap-3">
-                  <Badge label={r.approved ? 'Approved' : 'Pending'} color={r.approved ? 'green' : 'yellow'} />
-                  <span className="text-gray-500 text-xs">{fmt(r.submitted_at)}</span>
+                  <Badge label={r.status === 'approved' ? 'Approved' : 'Pending'} color={r.status === 'approved' ? 'green' : 'yellow'} />
+                  <span className="text-gray-500 text-xs">{fmt(r.created_at)}</span>
                   <button onClick={() => remove(r.id)} disabled={deleting[r.id]} className="text-gray-500 hover:text-red-400 transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -358,10 +359,10 @@ function FeedbackTab() {
               </div>
               <p className="text-gray-300 text-sm whitespace-pre-wrap mb-3">{r.comment}</p>
               <button
-                onClick={() => toggleApprove(r.id, r.approved)}
-                className={`flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg transition-colors text-white ${r.approved ? 'bg-gray-600 hover:bg-gray-700' : 'bg-green-600 hover:bg-green-700'}`}
+                onClick={() => toggleApprove(r.id, r.status || 'pending')}
+                className={`flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg transition-colors text-white ${r.status === 'approved' ? 'bg-gray-600 hover:bg-gray-700' : 'bg-green-600 hover:bg-green-700'}`}
               >
-                {r.approved ? <><XCircle className="w-3.5 h-3.5" /> Unapprove</> : <><CheckCircle className="w-3.5 h-3.5" /> Approve</>}
+                {r.status === 'approved' ? <><XCircle className="w-3.5 h-3.5" /> Unapprove</> : <><CheckCircle className="w-3.5 h-3.5" /> Approve</>}
               </button>
             </div>
           ))}
