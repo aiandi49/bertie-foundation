@@ -126,7 +126,7 @@ const allActiveMembers = [
   },
   // Existing Members
   { name: "Anthony Franklin", nickname: "Tony", title: "Member", imageUrl: "" },
-  { name: "Anna Chalk", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/bertie/anna_chalk.jpeg", objectPosition: "center 50%" },
+  { name: "Anna Chalk", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/bertie/anna_chalk.jpeg", objectPosition: "center 40%" },
   { name: "Auggie Karcher", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/auggie.jpeg" },
   { name: "Bernard Smith", title: "Member", imageUrl: "" },
   { name: "Carl Lockett", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/carl.jpeg" },
