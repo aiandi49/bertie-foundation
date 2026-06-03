@@ -1,7 +1,5 @@
-import { db } from '../utils/firebase';
-import { collection, addDoc, getDocs, query, where, orderBy, Timestamp, onSnapshot } from 'firebase/firestore';
+import { supabase } from './supabaseClient';
 
-// Types for all form submissions
 export interface NewsletterSubscription {
   email: string;
   source: string;
@@ -44,7 +42,7 @@ export interface SuccessStory {
 
 export interface FeedbackSubmission {
   id: string;
-  approved?: boolean; // Require moderator approval
+  approved?: boolean;
   name: string;
   email: string;
   rating: number;
@@ -58,333 +56,121 @@ export interface DonationSubmission {
   email: string;
   amount: number;
   program?: string;
-  message?: string;
   submittedAt: Date;
-  status: 'pending' | 'processed' | 'failed';
 }
 
-// Collection names
-const COLLECTIONS = {
-  NEWSLETTER: 'newsletter_subscriptions',
-  CONTACT: 'contact_submissions',
-  VOLUNTEER: 'volunteer_applications',
-  SUCCESS_STORIES: 'success_stories',
-  FEEDBACK: 'feedback_submissions',
-  DONATIONS: 'donation_submissions'
+export const formService = {
+  async submitNewsletter(data: Omit<NewsletterSubscription, 'subscribedAt'>) {
+    const { error } = await supabase.from('newsletter_subscribers').insert({
+      email: data.email,
+      source: data.source,
+      status: data.status,
+      subscribed_at: new Date().toISOString(),
+    });
+    if (error) throw error;
+  },
+
+  async getNewsletterSubscribers(): Promise<NewsletterSubscription[]> {
+    const { data, error } = await supabase
+      .from('newsletter_subscribers')
+      .select('*')
+      .order('subscribed_at', { ascending: false });
+    if (error) throw error;
+    return (data || []).map((s: any) => ({
+      email: s.email,
+      source: s.source,
+      status: s.status,
+      subscribedAt: new Date(s.subscribed_at),
+    }));
+  },
+
+  async submitContact(data: Omit<ContactSubmission, 'submittedAt' | 'status'>) {
+    const { error } = await supabase.from('contact_requests').insert({
+      name: data.name,
+      email: data.email,
+      subject: data.subject,
+      message: data.message,
+      submitted_at: new Date().toISOString(),
+      status: 'new',
+    });
+    if (error) throw error;
+  },
+
+  async getContactSubmissions(): Promise<ContactSubmission[]> {
+    const { data, error } = await supabase
+      .from('contact_requests')
+      .select('*')
+      .order('submitted_at', { ascending: false });
+    if (error) throw error;
+    return (data || []).map((s: any) => ({
+      name: s.name,
+      email: s.email,
+      subject: s.subject,
+      message: s.message,
+      submittedAt: new Date(s.submitted_at),
+      status: s.status,
+    }));
+  },
+
+  async submitVolunteer(data: Omit<VolunteerApplication, 'submittedAt' | 'status'>) {
+    const { error } = await supabase.from('volunteer_applications').insert({
+      name: data.name,
+      email: data.email,
+      message: data.message,
+      interests: data.interests,
+      skills: data.skills,
+      availability: data.availability,
+      submitted_at: new Date().toISOString(),
+      status: 'pending',
+    });
+    if (error) throw error;
+  },
+
+  async getVolunteerApplications(): Promise<VolunteerApplication[]> {
+    const { data, error } = await supabase
+      .from('volunteer_applications')
+      .select('*')
+      .order('submitted_at', { ascending: false });
+    if (error) throw error;
+    return (data || []).map((s: any) => ({
+      name: s.name,
+      email: s.email,
+      skills: s.skills || [],
+      interests: s.interests || [],
+      availability: s.availability,
+      message: s.message,
+      submittedAt: new Date(s.submitted_at),
+      status: s.status,
+    }));
+  },
+
+  async submitSuccessStory(data: Omit<SuccessStory, 'submittedAt' | 'status'>) {
+    const { error } = await supabase.from('success_stories').insert({
+      title: data.title,
+      story: data.story,
+      program: data.program,
+      impact: data.impact,
+      name: data.name,
+      email: data.email,
+      image_url: data.imageUrl,
+      timestamp: new Date().toISOString(),
+      status: 'pending',
+    });
+    if (error) throw error;
+  },
+
+  async submitFeedback(data: Omit<FeedbackSubmission, 'id' | 'submittedAt'>) {
+    const { error } = await supabase.from('feedback').insert({
+      name: data.name,
+      email: data.email,
+      rating: data.rating,
+      category: data.category,
+      comment: data.feedback,
+      created_at: new Date().toISOString(),
+      status: 'pending',
+    });
+    if (error) throw error;
+  },
 };
 
-/**
- * Collection names exported for use in Firebase Cloud Functions
- * See firebaseFunctions.js for template implementation
- */
-export { COLLECTIONS };
-
-
-/**
- * Form Service - handles all form submissions to Firestore
- */
-export class FormService {
-  /**
-   * Helper method to handle Firestore errors consistently
-   */
-  private static handleFirestoreError(operation: string, error: any): Error {
-    console.error(`Error during ${operation}:`, error);
-    
-    // Network connectivity issues
-    if (error.code === 'unavailable' || error.code === 'failed-precondition') {
-      return new Error('Unable to connect to the database. Please check your internet connection and try again.');
-    }
-    
-    // Permission denied issues
-    if (error.code === 'permission-denied') {
-      return new Error('You don\'t have permission to perform this action. Please contact the administrator.');
-    }
-    
-    // Generic error with code details if available
-    return new Error(`${error.message || 'An unknown error occurred'} ${error.code ? `(Code: ${error.code})` : ''}`);
-  }
-  /**
-   * Subscribe to newsletter
-   */
-  static async subscribeToNewsletter(email: string, source: string = 'website'): Promise<void> {
-    try {
-      // Check network connectivity first
-      if (!window.navigator.onLine) {
-        throw new Error('You appear to be offline. Please check your internet connection and try again.');
-      }
-
-      console.log(`Attempting to subscribe email: ${email} from source: ${source}`);
-      
-      // Check if email already exists
-      const q = query(
-        collection(db, COLLECTIONS.NEWSLETTER),
-        where('email', '==', email.toLowerCase())
-      );
-      
-      try {
-        const snapshot = await getDocs(q);
-        
-        if (!snapshot.empty) {
-          throw new Error('This email is already subscribed to our newsletter.');
-        }
-        
-        // Add new subscription
-        await addDoc(collection(db, COLLECTIONS.NEWSLETTER), {
-          email: email.toLowerCase(),
-          subscribedAt: Timestamp.now(),
-          status: 'active',
-          source
-        });
-        
-        // Later: trigger cloud function for welcome email
-        console.log(`Successfully subscribed: ${email}`);
-      } catch (firestoreError) {
-        throw FormService.handleFirestoreError('newsletter subscription', firestoreError);
-      }
-    } catch (error) {
-      console.error('Error subscribing to newsletter:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Submit contact form
-   */
-  static async submitContactForm(data: Omit<ContactSubmission, 'submittedAt' | 'status'>): Promise<void> {
-    try {
-      // Check network connectivity first
-      if (!window.navigator.onLine) {
-        throw new Error('You appear to be offline. Please check your internet connection and try again.');
-      }
-
-      console.log('Submitting contact form...');
-      
-      try {
-        await addDoc(collection(db, COLLECTIONS.CONTACT), {
-          ...data,
-          submittedAt: Timestamp.now(),
-          status: 'new'
-        });
-        
-        // Later: trigger cloud function for notification email
-        console.log('Contact form submitted successfully');
-      } catch (firestoreError) {
-        throw FormService.handleFirestoreError('contact form submission', firestoreError);
-      }
-    } catch (error) {
-      console.error('Error submitting contact form:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Submit volunteer application
-   */
-  static async submitVolunteerApplication(data: Omit<VolunteerApplication, 'submittedAt' | 'status'>): Promise<void> {
-    try {
-      // Check network connectivity first
-      if (!window.navigator.onLine) {
-        throw new Error('You appear to be offline. Please check your internet connection and try again.');
-      }
-
-      console.log('Submitting volunteer application...');
-      
-      try {
-        await addDoc(collection(db, COLLECTIONS.VOLUNTEER), {
-          ...data,
-          submittedAt: Timestamp.now(),
-          status: 'pending'
-        });
-        
-        // Later: trigger cloud function for notification email
-        console.log('Volunteer application submitted successfully');
-      } catch (firestoreError) {
-        throw FormService.handleFirestoreError('volunteer application submission', firestoreError);
-      }
-    } catch (error) {
-      console.error('Error submitting volunteer application:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Submit success story
-   */
-  static async submitSuccessStory(data: Omit<SuccessStory, 'submittedAt' | 'status'>): Promise<void> {
-    try {
-      // Check network connectivity first
-      if (!window.navigator.onLine) {
-        throw new Error('You appear to be offline. Please check your internet connection and try again.');
-      }
-
-      console.log('Submitting success story...');
-      
-      try {
-        await addDoc(collection(db, COLLECTIONS.SUCCESS_STORIES), {
-          ...data,
-          submittedAt: Timestamp.now(),
-          status: 'pending'
-        });
-        
-        // Later: trigger cloud function for notification email
-        console.log('Success story submitted successfully');
-      } catch (firestoreError) {
-        throw FormService.handleFirestoreError('success story submission', firestoreError);
-      }
-    } catch (error) {
-      console.error('Error submitting success story:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Submit feedback
-   */
-  static async submitFeedback(data: Omit<FeedbackSubmission, 'submittedAt'>): Promise<void> {
-    try {
-      // Check network connectivity first
-      if (!window.navigator.onLine) {
-        throw new Error('You appear to be offline. Please check your internet connection and try again.');
-      }
-
-      console.log('Submitting feedback...');
-      
-      try {
-        await addDoc(collection(db, COLLECTIONS.FEEDBACK), {
-          ...data,
-          submittedAt: Timestamp.now()
-        });
-        
-        // Later: trigger cloud function for notification email
-        console.log('Feedback submitted successfully');
-      } catch (firestoreError) {
-        throw FormService.handleFirestoreError('feedback submission', firestoreError);
-      }
-    } catch (error) {
-      console.error('Error submitting feedback:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Submit donation
-   * 
-   * This will be enhanced with Firebase Cloud Functions in the future to:
-   * 1. Send a thank you email to the donor
-   * 2. Send a notification to the admin about the new donation
-   * 3. Track donation statistics for reporting
-   */
-  static async submitDonation(data: Omit<DonationSubmission, 'submittedAt' | 'status'>): Promise<void> {
-    try {
-      // Check network connectivity first
-      if (!window.navigator.onLine) {
-        throw new Error('You appear to be offline. Please check your internet connection and try again.');
-      }
-
-      console.log('Submitting donation...');
-      
-      try {
-        await addDoc(collection(db, COLLECTIONS.DONATIONS), {
-          ...data,
-          submittedAt: Timestamp.now(),
-          status: 'pending'
-        });
-        
-        // Later: trigger cloud function for payment processing and notification email
-        console.log('Donation submitted successfully');
-      } catch (firestoreError) {
-        throw FormService.handleFirestoreError('donation submission', firestoreError);
-      }
-    } catch (error) {
-      console.error('Error submitting donation:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Get newsletter subscribers
-   */
-  static async getNewsletterSubscribers(): Promise<NewsletterSubscription[]> {
-    try {
-      // Check network connectivity first
-      if (!window.navigator.onLine) {
-        throw new Error('You appear to be offline. Please check your internet connection and try again.');
-      }
-
-      console.log('Getting newsletter subscribers...');
-      
-      try {
-        const q = query(
-          collection(db, COLLECTIONS.NEWSLETTER),
-          where('status', '==', 'active'),
-          orderBy('subscribedAt', 'desc')
-        );
-        
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            ...data,
-            id: doc.id,
-            subscribedAt: data.subscribedAt.toDate()
-          } as NewsletterSubscription;
-        });
-      } catch (firestoreError) {
-        throw FormService.handleFirestoreError('retrieving newsletter subscribers', firestoreError);
-      }
-    } catch (error) {
-      console.error('Error getting newsletter subscribers:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Listen to form submissions in real-time
-   * @returns Unsubscribe function
-   */
-  static subscribeToFormSubmissions(
-    formType: keyof typeof COLLECTIONS,
-    callback: (submissions: any[]) => void
-  ) {
-    // Check network connectivity first
-    if (!window.navigator.onLine) {
-      console.warn('User appears to be offline. Real-time updates will resume when back online.');
-      // Return a dummy unsubscribe function
-      return () => {};
-    }
-
-    console.log(`Subscribing to ${formType} submissions...`);
-    
-    const collectionName = COLLECTIONS[formType];
-    const q = query(collection(db, collectionName), orderBy('submittedAt', 'desc'));
-    
-    try {
-      return onSnapshot(q, 
-        // On successful snapshot
-        (snapshot) => {
-          const submissions = snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-              ...data,
-              id: doc.id,
-              submittedAt: data.submittedAt.toDate()
-            };
-          });
-          
-          callback(submissions);
-        },
-        // On error
-        (error) => {
-          console.error(`Error in ${formType} subscription:`, error);
-          if (error.code === 'unavailable') {
-            console.warn('Network connection issue. Will retry when connection is restored.');
-          }
-        }
-      );
-    } catch (error) {
-      console.error(`Error setting up ${formType} subscription:`, error);
-      // Return a dummy unsubscribe function
-      return () => {};
-    }
-  }
-}
+export default formService;
