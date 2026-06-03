@@ -1,249 +1,126 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import Dict, Literal, Optional, List
-import os, json, urllib.request, urllib.error
-from datetime import datetime
 
-router = APIRouter()
+<style>
+.email-wrap { background: #f4f4f4; padding: 32px 16px; font-family: Georgia, 'Times New Roman', serif; }
+.email-card { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 4px; overflow: hidden; }
+.email-header { background: #6B0000; padding: 32px 40px; text-align: center; }
+.email-header img-placeholder { display:block; }
+.email-logo { color: #ffffff; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-family: Arial, sans-serif; margin-bottom: 8px; opacity: 0.8; }
+.email-logo-name { color: #ffffff; font-size: 22px; font-weight: bold; font-family: Georgia, serif; margin: 0; letter-spacing: 1px; }
+.email-divider { width: 40px; height: 2px; background: #c9a84c; margin: 14px auto 0; }
+.email-body { padding: 36px 40px 28px; }
+.email-greeting { font-size: 20px; color: #1a1a1a; margin: 0 0 16px; font-family: Georgia, serif; }
+.email-text { font-size: 15px; color: #444; line-height: 1.75; margin: 0 0 20px; font-family: Arial, sans-serif; }
+.email-highlight { background: #fdf8ee; border-left: 3px solid #c9a84c; padding: 14px 18px; margin: 20px 0; border-radius: 0 4px 4px 0; }
+.email-highlight p { margin: 4px 0; font-size: 14px; color: #333; font-family: Arial, sans-serif; }
+.email-highlight .label { font-weight: bold; color: #6B0000; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.email-btn-wrap { text-align: center; margin: 28px 0 8px; }
+.email-btn { display: inline-block; background: #6B0000; color: #ffffff; text-decoration: none; padding: 13px 32px; border-radius: 3px; font-size: 14px; font-family: Arial, sans-serif; letter-spacing: 0.5px; font-weight: bold; }
+.email-footer { background: #f9f9f9; border-top: 1px solid #ebebeb; padding: 20px 40px; text-align: center; }
+.email-footer p { font-size: 12px; color: #999; font-family: Arial, sans-serif; margin: 4px 0; line-height: 1.6; }
+.email-footer a { color: #6B0000; text-decoration: none; }
+.tab-row { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.tab { padding: 7px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1px solid #ddd; background: #fff; color: #555; font-family: Arial, sans-serif; }
+.tab.active { background: #6B0000; color: #fff; border-color: #6B0000; }
+</style>
 
-APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://bertiefoundation.org")
+<div class="tab-row">
+  <button class="tab active" onclick="showTab('contact')">Contact form</button>
+  <button class="tab" onclick="showTab('volunteer')">Volunteer</button>
+  <button class="tab" onclick="showTab('donation')">Donation</button>
+  <button class="tab" onclick="showTab('newsletter')">Newsletter</button>
+  <button class="tab" onclick="showTab('story')">Share story</button>
+</div>
 
-def get_admin_emails() -> List[str]:
-    env_val = os.environ.get("ADMIN_EMAILS", "")
-    if env_val:
-        return [e.strip() for e in env_val.split(",") if e.strip()]
-    return ["bertiefoundation@gmail.com", "msleespark@gmail.com", "ai.agent.lamar@gmail.com"]
+<div class="email-wrap">
+  <div class="email-card">
+    <div class="email-header">
+      <div class="email-logo">The</div>
+      <div class="email-logo-name">Bertie Foundation</div>
+      <div class="email-divider"></div>
+    </div>
 
-EMAIL_STYLES = """<style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #333; background: #f1f5f9; }
-    .wrapper { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background-color: #8B0000; color: white; padding: 28px 30px; text-align: center; border-radius: 8px 8px 0 0; }
-    .content { background-color: #ffffff; padding: 30px; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; }
-    .footer { margin-top: 16px; text-align: center; font-size: 12px; color: #6b7280; }
-    h1 { margin: 0; font-size: 24px; } h2 { font-size: 20px; margin-top: 0; color: #8B0000; }
-    p { line-height: 1.6; }
-    .field { margin-bottom: 12px; }
-    .label { font-weight: bold; color: #374151; }
-    .btn { display:inline-block; background:#8B0000; color:white; padding:12px 28px; border-radius:6px; text-decoration:none; font-weight:bold; margin-top:16px; }
-</style>"""
+    <div class="email-body" id="email-body">
+      <p class="email-greeting">Hello, Marcus!</p>
+      <p class="email-text">Thank you for reaching out to the Bertie Foundation. We have received your message and one of our team members will be in touch with you within <strong>24–48 hours</strong>.</p>
+      <div class="email-highlight">
+        <p class="label">Your message</p>
+        <p style="margin-top:8px; font-style:italic; color:#555;">"I would love to learn more about your mentorship programs and how I can get involved in the community."</p>
+      </div>
+      <p class="email-text">In the meantime, we invite you to explore our website to learn more about our programs, community impact, and upcoming events.</p>
+      <div class="email-btn-wrap">
+        <a href="#" class="email-btn">Visit Our Website</a>
+      </div>
+    </div>
 
-TemplateType = Literal["volunteer_application", "contact_form", "donation", "feedback", "success_story", "newsletter"]
+    <div class="email-footer">
+      <p>© 2026 The Bertie Foundation &nbsp;·&nbsp; <a href="#">bertiefoundation.org</a></p>
+      <p>info@bertiefoundation.org &nbsp;·&nbsp; <a href="#">Unsubscribe</a></p>
+    </div>
+  </div>
+</div>
 
+<script>
+const templates = {
+  contact: {
+    greeting: 'Hello, Marcus!',
+    body: `<p class="email-text">Thank you for reaching out to the Bertie Foundation. We have received your message and one of our team members will be in touch with you within <strong>24–48 hours</strong>.</p>
+    <div class="email-highlight"><p class="label">Your message</p><p style="margin-top:8px;font-style:italic;color:#555;">"I would love to learn more about your mentorship programs and how I can get involved in the community."</p></div>
+    <p class="email-text">In the meantime, we invite you to explore our website to learn more about our programs, community impact, and upcoming events.</p>
+    <div class="email-btn-wrap"><a href="#" class="email-btn">Visit Our Website</a></div>`
+  },
+  volunteer: {
+    greeting: 'Hello, Marcus!',
+    body: `<p class="email-text">We are thrilled to welcome you to the Bertie Foundation volunteer family! Your application has been received and is currently under review.</p>
+    <div class="email-highlight">
+      <p class="label">Your application details</p>
+      <p style="margin-top:8px;color:#555;"><strong>Interests:</strong> Mentorship, Community Events</p>
+      <p style="color:#555;"><strong>Availability:</strong> Weekends</p>
+    </div>
+    <p class="email-text">A member of our team will reach out to you soon with next steps. We look forward to making a difference together.</p>
+    <div class="email-btn-wrap"><a href="#" class="email-btn">Learn More About Us</a></div>`
+  },
+  donation: {
+    greeting: 'Hello, Marcus!',
+    body: `<p class="email-text">Your generosity means the world to us and to the community we serve. We are deeply grateful for your contribution to the Bertie Foundation.</p>
+    <div class="email-highlight">
+      <p class="label">Donation confirmation</p>
+      <p style="margin-top:8px;color:#555;"><strong>Amount:</strong> $150.00</p>
+      <p style="color:#555;"><strong>Date:</strong> June 3, 2026</p>
+      <p style="color:#555;"><strong>Program:</strong> Youth Mentorship</p>
+    </div>
+    <p class="email-text">Your donation directly supports our programs and creates lasting impact in the lives of those we serve. Thank you for believing in our mission.</p>
+    <div class="email-btn-wrap"><a href="#" class="email-btn">See Our Impact</a></div>`
+  },
+  newsletter: {
+    greeting: 'Welcome to the family!',
+    body: `<p class="email-text">You are now officially part of the Bertie Foundation community. We are so glad to have you with us.</p>
+    <p class="email-text">As a subscriber, you will be the first to know about:</p>
+    <div class="email-highlight">
+      <p style="margin:4px 0;color:#555;">&#10003; &nbsp;Volunteer opportunities</p>
+      <p style="margin:4px 0;color:#555;">&#10003; &nbsp;Community events and programs</p>
+      <p style="margin:4px 0;color:#555;">&#10003; &nbsp;Impact stories from our community</p>
+      <p style="margin:4px 0;color:#555;">&#10003; &nbsp;Ways to get involved and give back</p>
+    </div>
+    <p class="email-text">We are excited to share our journey with you.</p>
+    <div class="email-btn-wrap"><a href="#" class="email-btn">Explore Our Website</a></div>`
+  },
+  story: {
+    greeting: 'Hello, Marcus!',
+    body: `<p class="email-text">Thank you for sharing your story with the Bertie Foundation. Submissions like yours inspire our entire community and remind us why this work matters so much.</p>
+    <div class="email-highlight">
+      <p class="label">Story received</p>
+      <p style="margin-top:8px;font-style:italic;color:#555;">"How the Bertie Foundation changed my life"</p>
+      <p style="color:#999;font-size:13px;">Under review · Submitted June 3, 2026</p>
+    </div>
+    <p class="email-text">Once approved by our team, your story will be featured on our website to inspire others in the community.</p>
+    <div class="email-btn-wrap"><a href="#" class="email-btn">Visit Our Website</a></div>`
+  }
+};
 
-class EmailNotification(BaseModel):
-    to: str
-    subject: str
-    content_html: str
-    content_text: str = ""
-
-
-def send_email(notification: EmailNotification) -> bool:
-    # Read key at call time so Render env vars are always fresh after redeploy
-    resend_api_key = os.environ.get("RESEND_API_KEY", "")
-    smtp_from = os.environ.get("SMTP_EMAIL", "info@bertiefoundation.org")
-
-    if not resend_api_key:
-        print("ERROR: RESEND_API_KEY not set — email not sent. Add it to Render environment variables.")
-        return False
-
-    try:
-        html_body = notification.content_html
-        if not html_body.strip().lower().startswith("<!doctype") and "<html" not in html_body.lower():
-            html_body = f"""<!DOCTYPE html><html><head><meta charset="UTF-8"/></head><body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,sans-serif;">{html_body}</body></html>"""
-
-        payload = json.dumps({
-            "from": f"Bertie Foundation <{smtp_from}>",
-            "to": [notification.to],
-            "subject": notification.subject,
-            "html": html_body,
-        }).encode("utf-8")
-
-        req = urllib.request.Request(
-            "https://api.resend.com/emails",
-            data=payload,
-            headers={
-                "Authorization": f"Bearer {resend_api_key}",
-                "Content-Type": "application/json",
-            },
-            method="POST",
-        )
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            body = resp.read().decode("utf-8")
-            print(f"Email sent to {notification.to} — status {resp.status} — {body}")
-            return True
-    except urllib.error.HTTPError as e:
-        error_body = e.read().decode("utf-8") if e.fp else "no body"
-        print(f"Resend HTTP error {e.code} sending to {notification.to}: {error_body}")
-        return False
-    except Exception as e:
-        print(f"Email error to {notification.to}: {e}")
-        return False
-
-
-def _wrap(body: str) -> str:
-    base_url = os.environ.get("APP_BASE_URL", "https://bertiefoundation.org")
-    return f"""<!DOCTYPE html><html><head><meta charset="UTF-8"/>{EMAIL_STYLES}</head>
-<body><div class="wrapper">{body}<div class="footer"><p>© {datetime.now().year} Bertie Foundation · <a href="{base_url}">bertiefoundation.org</a></p></div></div></body></html>"""
-
-
-def get_admin_template(template_type: str, data: dict) -> str:
-    label = template_type.replace("_", " ").title()
-    submitted_at = data.get("submitted_at", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    rows = "".join(
-        f'<div class="field"><span class="label">{k.replace("_"," ").title()}:</span> {v}</div>'
-        for k, v in data.items() if k not in ["submitted_at", "id", "status"] and v is not None
-    )
-    body = f"""
-    <div class="header"><h1>New {label} Submission</h1></div>
-    <div class="content">
-        <h2>{label}</h2>
-        {rows}
-        <div class="field"><span class="label">Submitted At:</span> {submitted_at}</div>
-    </div>"""
-    return _wrap(body)
-
-
-def get_user_template(template_type: str, data: dict) -> str:
-    base_url = os.environ.get("APP_BASE_URL", "https://bertiefoundation.org")
-    name = data.get("name", "Friend")
-    if template_type == "contact_form":
-        body = f"""
-        <div class="header"><h1>Message Received</h1></div>
-        <div class="content">
-            <h2>Hello, {name}!</h2>
-            <p>Thank you for reaching out to the <strong>Bertie Foundation</strong>. We have received your message and will respond within <strong>24–48 hours</strong>.</p>
-            <div class="field"><span class="label">Subject:</span> {data.get('subject','N/A')}</div>
-            <div class="field"><span class="label">Your Message:</span><br>{data.get('message','')}</div>
-            <p>In the meantime, feel free to explore our website.</p>
-            <a href="{base_url}" class="btn">Visit Bertie Foundation</a>
-        </div>"""
-    elif template_type == "volunteer_application":
-        interests = data.get("interests", [])
-        if isinstance(interests, list):
-            interests = ", ".join(interests) if interests else "Not specified"
-        body = f"""
-        <div class="header"><h1>Thank You for Volunteering!</h1></div>
-        <div class="content">
-            <h2>Hello {name}!</h2>
-            <p>We are so excited to have you join the Bertie Foundation volunteer family! Your application has been received and a team member will be in touch soon.</p>
-            <div class="field"><span class="label">Interests:</span> {interests}</div>
-            <div class="field"><span class="label">Availability:</span> {data.get('availability','To be discussed')}</div>
-            <a href="{base_url}" class="btn">Learn More About Us</a>
-        </div>"""
-    elif template_type in ["success_story", "success_stories"]:
-        body = f"""
-        <div class="header"><h1>Thank You for Sharing Your Story!</h1></div>
-        <div class="content">
-            <h2>Hello {name}!</h2>
-            <p>Your story <strong>"{data.get('title','')}"</strong> has been received and is under review. Once approved, it will be featured on our website!</p>
-            <a href="{base_url}" class="btn">Visit Our Website</a>
-        </div>"""
-    elif template_type == "feedback":
-        rating = data.get("rating", "")
-        stars = "★" * int(rating) if rating else ""
-        body = f"""
-        <div class="header"><h1>Thank You for Your Feedback</h1></div>
-        <div class="content">
-            <h2>We Value Your Input!</h2>
-            <p>Thank you for sharing your feedback. Your rating of {stars} ({rating}/5) has been recorded and helps us improve our programs.</p>
-            <a href="{base_url}" class="btn">Visit Bertie Foundation</a>
-        </div>"""
-    elif template_type == "donation":
-        amount = data.get("amount", "")
-        body = f"""
-        <div class="header"><h1>Thank You for Your Donation!</h1></div>
-        <div class="content">
-            <h2>Hello {name}!</h2>
-            <p>Your generous donation of <strong>${amount}</strong> has been received. Your contribution makes a real and lasting difference in our community.</p>
-            <a href="{base_url}" class="btn">See Our Impact</a>
-        </div>"""
-    elif template_type == "newsletter":
-        sub_id = data.get("id", "")
-        unsubscribe_url = f"{base_url}/unsubscribe/{sub_id}" if sub_id else f"{base_url}/unsubscribe"
-        body = f"""
-        <div class="header"><h1>Welcome to the Bertie Foundation!</h1></div>
-        <div class="content">
-            <h2>Hello {name}!</h2>
-            <p>You are officially part of the Bertie Foundation family! You will be the first to know about volunteer opportunities, community events, impact stories, and ways to get involved.</p>
-            <a href="{base_url}" class="btn">Explore Our Website</a>
-            <p style="margin-top:24px;font-size:13px;color:#9ca3af;">
-                If you did not sign up for this newsletter, you can <a href="{unsubscribe_url}">unsubscribe here</a>.
-            </p>
-        </div>"""
-    else:
-        body = f"""
-        <div class="header"><h1>Thank You for Your Submission</h1></div>
-        <div class="content">
-            <h2>Hello {name}!</h2>
-            <p>We have received your submission and will process it accordingly. Thank you for connecting with the Bertie Foundation!</p>
-            <a href="{base_url}" class="btn">Visit Our Website</a>
-        </div>"""
-    return _wrap(body)
-
-
-def send_form_notifications(form_type: str, form_data: dict, admin_recipients: list = None) -> Dict[str, bool]:
-    result = {"admin_sent": False, "user_sent": False}
-
-    if not admin_recipients:
-        admin_recipients = get_admin_emails()
-
-    if "submitted_at" not in form_data:
-        form_data["submitted_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    admin_html = get_admin_template(form_type, form_data)
-    name = form_data.get("name", "").strip()
-    date_str = datetime.now().strftime("%m/%d/%Y")
-    label = form_type.replace("_", " ").title()
-    subject = f"New {label} | {name} | {date_str}" if name else f"New {label} | {date_str}"
-
-    for admin_email in admin_recipients:
-        if send_email(EmailNotification(to=admin_email, subject=subject, content_html=admin_html)):
-            result["admin_sent"] = True
-
-    user_email = form_data.get("email")
-    form_types_with_confirmation = [
-        "newsletter", "volunteer", "volunteer_application",
-        "contact", "contact_form", "success_story", "success_stories",
-        "feedback", "donation"
-    ]
-    if user_email and form_type in form_types_with_confirmation:
-        type_map = {
-            "contact": "contact_form",
-            "volunteer": "volunteer_application",
-            "success_stories": "success_story",
-            "newsletter": "newsletter",
-        }
-        tkey = type_map.get(form_type, form_type)
-        user_html = get_user_template(tkey, form_data)
-        subjects = {
-            "newsletter": "Welcome to the Bertie Foundation Newsletter!",
-            "volunteer_application": "Your Volunteer Application — Bertie Foundation",
-            "success_story": "Thank You for Sharing Your Story — Bertie Foundation",
-            "feedback": "Thank You for Your Feedback — Bertie Foundation",
-            "donation": "Thank You for Your Donation — Bertie Foundation",
-            "contact_form": "We Received Your Message — Bertie Foundation",
-        }
-        user_subject = subjects.get(tkey, "Thank You — Bertie Foundation")
-        result["user_sent"] = send_email(EmailNotification(to=user_email, subject=user_subject, content_html=user_html))
-
-    print(f"send_form_notifications({form_type}): admin_sent={result['admin_sent']}, user_sent={result['user_sent']}")
-    return result
-
-
-@router.post("/test-notification", tags=["admin"])
-def test_notification(template_type: TemplateType, recipient_email: str):
-    test_data = {
-        "id": "test-123",
-        "name": "Test User",
-        "email": recipient_email,
-        "subject": "Test Subject",
-        "message": "This is a test message from the Bertie Foundation backend.",
-        "rating": 5,
-        "comment": "Great work!",
-        "category": "general",
-        "amount": "50.00",
-        "title": "Test Story",
-        "submitted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-    }
-    result = send_form_notifications(template_type, test_data, [recipient_email])
-    return {"status": "success" if result["admin_sent"] else "failed", "result": result}
+function showTab(key) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  const t = templates[key];
+  document.getElementById('email-body').innerHTML = `<p class="email-greeting">${t.greeting}</p>${t.body}`;
+}
+</script>
