@@ -4,15 +4,14 @@ import { ModeratorDashboard } from '../components/ModeratorDashboard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/Tabs';
 import { Mail, Users, MessageSquare, Award, Star, Shield, ClipboardList } from 'lucide-react';
 import { Button } from '../components/Button';
-import { auth } from '../utils/firebase';
+import { supabase } from '../utils/supabaseClient';
 import { useAuth } from '../utils/useAuth';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 
 function AdminDashboard() {
   const [activeView, setActiveView] = useState<'forms' | 'moderation'>('moderation');
 
   const handleLogout = async () => {
-    await auth.signOut();
+    await supabase.auth.signOut();
   };
 
   return (
@@ -75,27 +74,31 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     setError(null);
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (error) {
-      setError('Failed to sign in. Please check your credentials.');
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      setError('Invalid email or password. Please try again.');
     }
+    setLoading(false);
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900">
-      <div className="w-full max-w-md p-8 space-y-6 bg-gray-800 rounded-lg shadow-lg">
-        <h1 className="text-2xl font-bold text-center text-white">Admin Login</h1>
+      <div className="w-full max-w-md p-8 bg-gray-800 rounded-xl shadow-2xl">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white">Bertie Foundation</h1>
+          <p className="text-gray-400 mt-2">Admin Access</p>
+        </div>
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-300"
-            >
+            <label htmlFor="email" className="block text-sm font-medium text-gray-300">
               Email
             </label>
             <input
@@ -108,10 +111,7 @@ function Login() {
             />
           </div>
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-300"
-            >
+            <label htmlFor="password" className="block text-sm font-medium text-gray-300">
               Password
             </label>
             <input
@@ -124,8 +124,8 @@ function Login() {
             />
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
-          <Button type="submit" fullWidth>
-            Sign In
+          <Button type="submit" fullWidth disabled={loading}>
+            {loading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
       </div>
