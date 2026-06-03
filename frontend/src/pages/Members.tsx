@@ -50,6 +50,7 @@ const MemberCard: React.FC<MemberCardProps> = ({ name, nickname, title, imageUrl
             alt={name}
             className={`w-full h-full ${imageUrl ? 'object-cover rounded-full border-4 border-white/20' : 'object-contain rounded-lg'} 
                      group-hover:border-red-500/50 transition-colors duration-500`}
+            style={imageUrl ? { objectPosition: 'center 20%' } : undefined}
           />
         </div>
       </div>
@@ -131,11 +132,10 @@ const allActiveMembers = [
   { name: "Carol Popp", title: "Member", imageUrl: "" },
   { name: "Steve Reyes", title: "Member", imageUrl: "" },
   { name: "Chrissie Katz", title: "Member", imageUrl: "" },
-  { name: "Chom Hill", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/bertie/chom_jill.jpeg" },
   { name: "Cornell Sandifer", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/cornell.jpeg" },
   { name: "Daniel Powell", nickname: "Dan", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/dan.jpeg" },
   { name: "Dyrick Fowler", nickname: "Dee", title: "Member", imageUrl: "" },
-  { name: "Fang Chokchai", title: "Member", imageUrl: "" },
+  { name: "Fang Chokchai", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/bertie/chom_jill.jpeg" },
   { name: "Gregory Faison", title: "Member", imageUrl: "" },
   { name: "Harold W Hill Jr", nickname: "JR", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/bertie/harold_w_hill_jr.jpeg" },
   { name: "Jefferey Norris", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/bertie/jefferey_norris.jpeg" },
@@ -146,7 +146,7 @@ const allActiveMembers = [
   { name: "Mike Henry", title: "Member", imageUrl: "" },
   { name: "Mike Popp", title: "Member", imageUrl: "" },
   { name: "Nnamdi Samuels", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/nnamdi.jpeg" },
-  { name: "Rena Karcher", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/bertie/rena_karcher.jpeg" },
+  { name: "Rena Karcher", title: "Member", imageUrl: "" },
   { name: "Rich Smith", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/bertie/rich_smith.jpeg" },
   { name: "Rich Strong", title: "Member", imageUrl: "" },
   { name: "Sam Alexander", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/sam.jpeg" },
