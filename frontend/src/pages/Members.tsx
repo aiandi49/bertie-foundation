@@ -4,6 +4,7 @@ import { Navigation } from "../components/Navigation";
 import { AppLayout } from "../components/AppLayout";
 
 interface MemberCardProps {
+  objectPosition?: string;
   name: string;
   nickname?: string;
   title: string;
@@ -12,7 +13,7 @@ interface MemberCardProps {
   roleDescription?: string;
 }
 
-const MemberCard: React.FC<MemberCardProps> = ({ name, nickname, title, imageUrl, level, roleDescription }) => {
+const MemberCard: React.FC<MemberCardProps> = ({ name, nickname, title, imageUrl, level, roleDescription, objectPosition }) => {
   const baseClasses = `
     relative overflow-hidden rounded-xl p-6
     transition-all duration-500
@@ -48,6 +49,7 @@ const MemberCard: React.FC<MemberCardProps> = ({ name, nickname, title, imageUrl
           <img
             src={imageUrl || "/images/bertie-logo.jpg"}
             alt={name}
+            style={objectPosition ? { objectPosition } : undefined}
             className={`w-full h-full ${imageUrl ? 'object-cover rounded-full border-4 border-white/20' : 'object-contain rounded-lg'} 
                      group-hover:border-red-500/50 transition-colors duration-500`}
           />
@@ -124,7 +126,7 @@ const allActiveMembers = [
   },
   // Existing Members
   { name: "Anthony Franklin", nickname: "Tony", title: "Member", imageUrl: "" },
-  { name: "Anna Chalk", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/bertie/anna_chalk.jpeg" },
+  { name: "Anna Chalk", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/bertie/anna_chalk.jpeg", objectPosition: "center 15%" },
   { name: "Auggie Karcher", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/auggie.jpeg" },
   { name: "Bernard Smith", title: "Member", imageUrl: "" },
   { name: "Carl Lockett", title: "Member", imageUrl: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/carl.jpeg" },
