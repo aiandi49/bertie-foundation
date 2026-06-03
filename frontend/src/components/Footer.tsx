@@ -14,24 +14,18 @@ export function Footer() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Email validation is handled by the backend
-
   const handleSubscribe = async () => {
-    // Reset states
     setError('');
     setSuccess('');
 
-    // Check if email is provided
     if (!email || !name) {
       setError('Name and email are required.');
       return;
     }
 
-    // Start loading
     setIsLoading(true);
 
     try {
-      // Call the backend API
       const response = await apiClient.subscribe_to_newsletter({
         name: name,
         email: email,
@@ -41,16 +35,13 @@ export function Footer() {
       const data = response.data;
       console.log('Subscription response:', data);
       
-      // Clear form fields
       setName('');
       setEmail('');
 
       if (data?.message?.includes("already subscribed")) {
-        // Set a specific success message for already subscribed users and do not show modal
         setSuccess(`You are already subscribed. Please check your inbox for confirmation.`);
         setShowSuccessModal(false); 
       } else {
-        // Set a generic success message for new subscribers and show modal
         setSuccess('Successfully Subscribed!');
         setShowSuccessModal(true);
       }
@@ -174,8 +165,11 @@ export function Footer() {
               </li>
               <li>
                 <button
-                  disabled
-                  className="text-gray-500 cursor-not-allowed
+                  onClick={() => {
+                    navigate("/admin");
+                    window.scrollTo(0, 0);
+                  }}
+                  className="text-white hover:text-white/80 transition-colors
                            flex items-center space-x-2 group w-full text-left"
                 >
                   <span className="w-1 h-1 bg-white rounded-full transform scale-0 group-hover:scale-100 transition-transform duration-300" />
@@ -400,10 +394,13 @@ export function Footer() {
             A Nonprofit 501(c)(3) Organization. Copyright © Bertie Foundation. All Rights Reserved.
           </p>
           <button
-            disabled 
-            className="text-white/50 cursor-not-allowed hover:text-white/70 transition-colors"
-            >
-              Admin Access
+            onClick={() => {
+              navigate("/admin");
+              window.scrollTo(0, 0);
+            }}
+            className="text-white/70 hover:text-white transition-colors"
+          >
+            Admin Access
           </button>
         </div>
       </div>
