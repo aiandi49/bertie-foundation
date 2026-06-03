@@ -1,12 +1,9 @@
 import React, { useState } from "react";
 import { Layout } from "../components/Layout";
 import { FeedbackForm } from "../components/FeedbackForm";
-import { FormServiceFallback as FormService } from "../utils/formServiceFallback";
 import { motion } from "framer-motion";
-import { apiClient } from "app";
-import { ContentType } from "types";
 import { trackEvent, ANALYTICS_EVENTS } from "../utils/analytics";
-import { API_URL } from "app";
+import { supabase } from "../utils/supabaseClient";
 
 export default function Feedback() {
   const [loading, setLoading] = useState(false);
@@ -111,26 +108,17 @@ export default function Feedback() {
                       setError("");
                       
                       try {
-                        // Store in local fallback as backup
-                        await FormService.submitFeedback({
-                          ...feedback,
-                          createdAt: new Date().toISOString()
+                        // Submit directly to Supabase
+                        const { error: dbError } = await supabase.from('feedback').insert({
+                          rating: feedback.rating,
+                          comment: feedback.comment,
+                          category: feedback.category,
+                          email: feedback.email || null,
+                          created_at: new Date().toISOString(),
+                          status: 'pending',
                         });
                         
-                        // Submit directly to feedback API using brain client
-                        try {
-                          const response = await apiClient.submit_feedback({
-                            rating: feedback.rating,
-                            comment: feedback.comment,
-                            category: feedback.category,
-                            email: feedback.email || null
-                          });
-                          
-                          console.log("Feedback API response:", response.data);
-                        } catch (submitError) {
-                          console.error("Error submitting to API:", submitError);
-                          throw new Error("Failed to submit feedback to API");
-                        }
+                        if (dbError) throw dbError;
                         
                         // Track successful submission
                         await trackEvent({
