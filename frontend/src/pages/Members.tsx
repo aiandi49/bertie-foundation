@@ -50,7 +50,7 @@ const MemberCard: React.FC<MemberCardProps> = ({ name, nickname, title, imageUrl
             alt={name}
             className={`w-full h-full ${imageUrl ? 'object-cover rounded-full border-4 border-white/20' : 'object-contain rounded-lg'} 
                      group-hover:border-red-500/50 transition-colors duration-500`}
-            style={imageUrl ? { objectPosition: 'center 20%' } : undefined}
+            style={imageUrl ? { objectPosition: 'center top' } : undefined}
           />
         </div>
       </div>
