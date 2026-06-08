@@ -73,7 +73,7 @@ export function Navigation() {
             <div className="flex items-center">
               <Link to="/" className="flex items-center">
                 <img 
-                  src="/images/bertie-logo.jpg" 
+                  src="https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/bertie/treeheart_logo_trans_background.png" 
                   alt="Bertie Foundation Logo" 
                   className="h-20 w-auto object-contain mr-2 shadow-lg shadow-primary-400/60 transition-all hover:shadow-primary-400/80 rounded-lg" 
                 />
