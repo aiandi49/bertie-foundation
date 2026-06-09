@@ -7,7 +7,7 @@ import { Button } from "./Button";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: () => boolean;
+  onSubmit: () => Promise<boolean> | boolean;
   story: {
     title: string;
     story: string;
@@ -24,9 +24,9 @@ export function PreviewModal({ isOpen, onClose, onSubmit, story }: Props) {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   
-  const handleSubmit = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent any form submission
-    e.stopPropagation(); // Stop event propagation
+  const handleSubmit = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     
     setSubmitting(true);
     setError("");
@@ -38,14 +38,18 @@ export function PreviewModal({ isOpen, onClose, onSubmit, story }: Props) {
       return;
     }
     
-    // Submit the form
-    const success = onSubmit();
-    if (success) {
-      onClose();
-    } else {
+    try {
+      const success = await onSubmit();
+      if (success) {
+        onClose();
+      } else {
+        setError("There was a problem submitting your story. Please try again.");
+      }
+    } catch (err) {
       setError("There was a problem submitting your story. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
   return (
     <AnimatePresence>
