@@ -9,7 +9,7 @@ import { SearchAndFilter } from "./SearchAndFilter";
 import { DonationSection } from "./DonationSection";
 import { Users, Award, Clock, BookOpen, TrendingUp, DollarSign, Heart, Target, Star, ArrowUp, ArrowDown, Trophy } from "lucide-react";
 import { trackEvent, ANALYTICS_EVENTS } from "../utils/analytics";
-import { apiClient } from "app";
+import { supabase } from "../utils/supabaseClient";
 
 // Animation variants
 const fadeInVariants: Variants = {
@@ -192,8 +192,21 @@ export const CommunityDashboard: FC = () => {
       setLoading(true);
       setSectionLoading({ metrics: true, impacts: true, stories: true });
 
-      const response = await apiClient.get_community_stats();
-      const data = response.data;
+      const [storiesRes, feedbackRes, contactRes] = await Promise.all([
+        supabase.from("success_stories").select("id, program, status"),
+        supabase.from("feedback").select("id, rating, category"),
+        supabase.from("contact_requests").select("id"),
+      ]);
+      const data = {
+        total_stories: storiesRes.data?.length || 0,
+        approved_stories: storiesRes.data?.filter((s: any) => s.status === "approved").length || 0,
+        total_feedback: feedbackRes.data?.length || 0,
+        average_rating: feedbackRes.data?.length
+          ? feedbackRes.data.reduce((s: number, r: any) => s + (r.rating || 0), 0) / feedbackRes.data.length
+          : 0,
+        total_contacts: contactRes.data?.length || 0,
+        programs: [...new Set((storiesRes.data || []).map((s: any) => s.program).filter(Boolean))],
+      };
 
       // Simulate staggered loading for better UX
       setTimeout(() => setSectionLoading(prev => ({ ...prev, metrics: false })), 500);
