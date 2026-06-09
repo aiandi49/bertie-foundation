@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 // Components
 import { Navigation } from "components/Navigation";
@@ -11,11 +12,112 @@ import { OptimizedImage } from "components/OptimizedImage";
 import { useNotificationStore } from "utils/notificationStore";
 import { getOptimizedAnimationConfig, getScrollBasedAnimationConfig } from "utils/performanceUtils";
 
+const HERO_IMAGES = [
+  { src: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/1.jpeg",  alt: "Bertie Foundation volunteers" },
+  { src: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/2b.jpeg", alt: "Bertie Foundation donation drive" },
+  { src: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/3.jpeg",  alt: "Community support program" },
+  { src: "https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/4.jpeg",  alt: "Children receiving donations" },
+];
+
+function Lightbox({ index, onClose, onPrev, onNext }: { index: number; onClose: () => void; onPrev: () => void; onNext: () => void }) {
+  const img = HERO_IMAGES[index];
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") onPrev();
+      if (e.key === "ArrowRight") onNext();
+    };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose, onPrev, onNext]);
+
+  return (
+    <motion.div
+      key="lightbox-backdrop"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      style={{ background: "rgba(5, 10, 25, 0.93)", backdropFilter: "blur(6px)" }}
+      onClick={onClose}
+    >
+      {/* Close */}
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 z-10 text-white bg-white/10 hover:bg-white/25 rounded-full p-2 transition-colors"
+        aria-label="Close"
+      >
+        <X size={24} />
+      </button>
+
+      {/* Prev */}
+      <button
+        onClick={(e) => { e.stopPropagation(); onPrev(); }}
+        className="absolute left-3 sm:left-6 text-white bg-white/10 hover:bg-white/25 rounded-full p-3 transition-colors"
+        aria-label="Previous"
+      >
+        <ChevronLeft size={28} />
+      </button>
+
+      {/* Image */}
+      <motion.div
+        key={index}
+        initial={{ opacity: 0, scale: 0.94 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.94 }}
+        transition={{ duration: 0.22 }}
+        className="relative flex items-center justify-center px-14 sm:px-20 w-full h-full"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <img
+          src={img.src}
+          alt={img.alt}
+          className="max-w-[92vw] max-h-[88vh] w-auto h-auto rounded-xl shadow-2xl object-contain"
+          style={{ boxShadow: "0 0 80px rgba(0,0,0,0.7)" }}
+        />
+        {/* Caption + counter */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm text-center">
+          <span>{img.alt}</span>
+          <span className="ml-3 text-white/40">{index + 1} / {HERO_IMAGES.length}</span>
+        </div>
+      </motion.div>
+
+      {/* Next */}
+      <button
+        onClick={(e) => { e.stopPropagation(); onNext(); }}
+        className="absolute right-3 sm:right-6 text-white bg-white/10 hover:bg-white/25 rounded-full p-3 transition-colors"
+        aria-label="Next"
+      >
+        <ChevronRight size={28} />
+      </button>
+
+      {/* Dot indicators */}
+      <div className="absolute bottom-4 right-4 flex gap-1.5">
+        {HERO_IMAGES.map((_, i) => (
+          <span key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === index ? "bg-white" : "bg-white/30"}`} />
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
 export default function App() {
   const navigate = useNavigate();
   const { fetchNotifications } = useNotificationStore();
   const [animConfig] = useState(getOptimizedAnimationConfig());
   const [scrollAnim] = useState(getScrollBasedAnimationConfig());
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const openLightbox = useCallback((i: number) => setLightboxIndex(i), []);
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+  const prevImage = useCallback(() => setLightboxIndex(i => i !== null ? (i - 1 + HERO_IMAGES.length) % HERO_IMAGES.length : 0), []);
+  const nextImage = useCallback(() => setLightboxIndex(i => i !== null ? (i + 1) % HERO_IMAGES.length : 0), []);
 
   useEffect(() => {
     fetchNotifications();
