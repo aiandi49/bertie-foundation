@@ -6,7 +6,7 @@ import { Award, User, Calendar, Star, Tag } from "lucide-react";
 import { Button } from "../components/Button";
 import { useNavigate } from "react-router-dom";
 import { trackEvent } from "../utils/analytics";
-import { apiClient } from "app";
+import { supabase } from "../utils/supabaseClient";
 import { TestimonialCarousel } from "../components/TestimonialCarousel";
 
 export default function SuccessStories() {
@@ -21,14 +21,15 @@ export default function SuccessStories() {
       setError(null);
       
       try {
-        // First try to get from API
-        const response = await apiClient.get_success_stories();
-        const apiStories = response.data;
-        
-        if (apiStories && Array.isArray(apiStories) && apiStories.length > 0) {
+        const { data: apiStories, error } = await supabase
+          .from("success_stories")
+          .select("*")
+          .eq("status", "approved")
+          .order("timestamp", { ascending: false });
+
+        if (!error && apiStories && apiStories.length > 0) {
           setStories(apiStories);
         } else {
-          // Fallback to local storage if API returns empty results
           const localStories = FormServiceFallback.getSuccessStories();
           setStories(localStories);
         }
