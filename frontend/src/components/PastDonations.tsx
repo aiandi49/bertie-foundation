@@ -37,8 +37,14 @@ const useFadeIn = () => {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { el.style.opacity = "1"; el.style.transform = "translateY(0)"; obs.unobserve(el); } },
-      { threshold: 0.08 }
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.style.opacity = "1";
+          el.style.transform = "translateY(0)";
+          obs.unobserve(el);
+        }
+      },
+      { threshold: 0.06 }
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -58,8 +64,16 @@ const EventCard: React.FC<{ event: typeof VIDEOS[0]; featured?: boolean }> = ({ 
         style={{ opacity: 0, transform: "translateY(24px)", transition: "opacity 0.55s ease, transform 0.55s ease" }}
         className="col-span-full flex flex-col md:flex-row bg-secondary-800 border border-white/5 rounded-2xl overflow-hidden hover:-translate-y-1 hover:border-primary-500/40 hover:shadow-2xl transition-all duration-200 group"
       >
-        <div className="relative md:w-96 flex-shrink-0 aspect-video md:aspect-auto overflow-hidden bg-secondary-900">
-          {thumb && <img src={thumb} alt={event.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400" />}
+        {/* Thumbnail */}
+        <div className="relative w-full md:w-96 flex-shrink-0 aspect-video md:aspect-auto overflow-hidden bg-secondary-900">
+          {thumb && (
+            <img
+              src={thumb}
+              alt={event.title}
+              loading="lazy"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400"
+            />
+          )}
           <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
               <svg className="w-5 h-5 fill-gray-900 ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -69,14 +83,16 @@ const EventCard: React.FC<{ event: typeof VIDEOS[0]; featured?: boolean }> = ({ 
             {event.date}
           </span>
         </div>
-        <div className="p-7 flex flex-col justify-center">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-widest uppercase text-primary-400 bg-primary-500/10 px-3 py-1 rounded-full w-fit mb-3">
+
+        {/* Body — centered on mobile, left-aligned on md+ */}
+        <div className="p-6 md:p-7 flex flex-col justify-center items-center md:items-start text-center md:text-left">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-widest uppercase text-primary-400 bg-primary-500/10 px-3 py-1 rounded-full mb-3">
             <MapPin className="w-2.5 h-2.5" />{event.category}
           </span>
           <h3 className="text-xl font-bold text-white leading-snug mb-3">{event.title}</h3>
           <p className="text-sm text-gray-400 leading-relaxed line-clamp-4">{event.description}</p>
           {event.tags?.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/5">
+            <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4 pt-4 border-t border-white/5 w-full">
               {event.tags.map(tag => (
                 <span key={tag} className="text-xs text-gray-500 bg-white/4 border border-white/6 rounded-full px-2.5 py-0.5">{tag}</span>
               ))}
@@ -93,8 +109,16 @@ const EventCard: React.FC<{ event: typeof VIDEOS[0]; featured?: boolean }> = ({ 
       style={{ opacity: 0, transform: "translateY(24px)", transition: "opacity 0.55s ease, transform 0.55s ease" }}
       className="flex flex-col bg-secondary-800 border border-white/5 rounded-2xl overflow-hidden hover:-translate-y-1 hover:border-primary-500/40 hover:shadow-2xl transition-all duration-200 group"
     >
+      {/* Thumbnail */}
       <div className="relative aspect-video overflow-hidden bg-secondary-900">
-        {thumb && <img src={thumb} alt={event.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400" />}
+        {thumb && (
+          <img
+            src={thumb}
+            alt={event.title}
+            loading="lazy"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400"
+          />
+        )}
         <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <div className="w-11 h-11 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
             <svg className="w-4 h-4 fill-gray-900 ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -104,14 +128,16 @@ const EventCard: React.FC<{ event: typeof VIDEOS[0]; featured?: boolean }> = ({ 
           {event.date}
         </span>
       </div>
-      <div className="p-5 flex flex-col flex-1">
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-widest uppercase text-primary-400 bg-primary-500/10 px-2.5 py-1 rounded-full w-fit mb-3">
+
+      {/* Body — centered on mobile, left-aligned on md+ */}
+      <div className="p-5 flex flex-col flex-1 items-center md:items-start text-center md:text-left">
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-widest uppercase text-primary-400 bg-primary-500/10 px-2.5 py-1 rounded-full mb-3">
           <MapPin className="w-2.5 h-2.5" />{event.category}
         </span>
         <h3 className="text-sm font-semibold text-white leading-snug mb-2">{event.title}</h3>
         <p className="text-xs text-gray-400 leading-relaxed line-clamp-3 flex-1">{event.description}</p>
         {event.tags?.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-4 pt-3 border-t border-white/5">
+          <div className="flex flex-wrap justify-center md:justify-start gap-1.5 mt-4 pt-3 border-t border-white/5 w-full">
             {event.tags.map(tag => (
               <span key={tag} className="text-xs text-gray-500 bg-white/4 border border-white/6 rounded-full px-2 py-0.5">{tag}</span>
             ))}
@@ -127,29 +153,29 @@ const PastDonations: React.FC = () => {
   const years = Object.keys(grouped).sort((a, b) => Number(b) - Number(a));
 
   return (
-    <div className="bg-secondary-950 text-white py-16">
+    <div className="bg-secondary-950 text-white py-12 md:py-16">
       <div className="container mx-auto px-4 max-w-6xl">
 
-        {/* Section header */}
-        <div className="text-center mb-16">
+        {/* Section header — fully centered */}
+        <div className="flex flex-col items-center text-center mb-12 md:mb-16">
           <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-primary-400 bg-primary-500/10 border border-primary-500/20 px-4 py-2 rounded-full mb-5">
             <svg className="w-3.5 h-3.5 fill-red-500" viewBox="0 0 24 24"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
             Our Impact Journey
           </span>
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Who We've Helped</h2>
-          <p className="text-lg text-gray-400 max-w-xl mx-auto">
+          <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">Who We've Helped</h2>
+          <p className="text-base md:text-lg text-gray-400 max-w-xl">
             Every event, every donation, every life touched — our story from the very beginning.
           </p>
 
-          {/* Stats row */}
-          <div className="flex justify-center gap-12 mt-10 flex-wrap">
+          {/* Stats row — evenly spaced, centered */}
+          <div className="flex justify-center gap-8 md:gap-12 mt-10 flex-wrap w-full">
             {[
               { num: `${VIDEOS.length}+`, label: "Events" },
               { num: `${years.length}+`, label: "Years of Service" },
               { num: "10+", label: "Organisations Helped" },
             ].map(s => (
-              <div key={s.label} className="text-center">
-                <div className="text-4xl font-bold text-white">{s.num}</div>
+              <div key={s.label} className="flex flex-col items-center">
+                <div className="text-3xl md:text-4xl font-bold text-white">{s.num}</div>
                 <div className="text-xs uppercase tracking-widest text-gray-500 mt-1">{s.label}</div>
               </div>
             ))}
@@ -160,16 +186,17 @@ const PastDonations: React.FC = () => {
         {years.map(year => {
           const events = grouped[year];
           return (
-            <div key={year} className="mb-6">
-              {/* Year header */}
-              <div className="flex items-center gap-4 mb-10 pt-6">
-                <span className="text-3xl font-bold text-white whitespace-nowrap">{year}</span>
+            <div key={year} className="mb-10">
+
+              {/* Year header — centered label on mobile, inline divider on desktop */}
+              <div className="flex items-center gap-4 mb-8 pt-4">
+                <span className="text-2xl md:text-3xl font-bold text-white whitespace-nowrap">{year}</span>
                 <div className="flex-1 h-px bg-gradient-to-r from-primary-500/40 to-transparent" />
                 <span className="text-xs text-gray-500 whitespace-nowrap">{events.length} event{events.length !== 1 ? "s" : ""}</span>
               </div>
 
-              {/* Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {/* Cards — single column on mobile, 2 col on md, 3 col on lg */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
                 {events.map((event, i) => (
                   <EventCard key={i} event={event} featured={i === 0} />
                 ))}
