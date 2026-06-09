@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { CheckCircle } from "lucide-react";
 import { Button } from "../components/Button";
 import { apiClient } from "app";
-import { ContentType } from "types";
+import { ContentType } from "../apiclient/data-contracts"; // FIX 1: correct import path
 import { Award, Users, TrendingUp } from "lucide-react";
 import { trackEvent } from "../utils/analytics";
 
@@ -73,10 +73,6 @@ export default function ShareStory() {
                   
                   if (story.image) {
                     try {
-                      // Create form data for image upload
-                      const formData = new FormData();
-                      formData.append('file', story.image);
-                      
                       // Upload image
                       const uploadResponse = await apiClient.upload_image({
                         title: story.title,
@@ -84,8 +80,9 @@ export default function ShareStory() {
                         description: `Success story image for ${story.name}`
                       }, { file: story.image });
                       
-                      const uploadData = await uploadResponse.json();
-                      imageUrl = uploadData.image.url;
+                      // FIX 2: apiClient returns the parsed response directly (not a raw Response),
+                      // so we access .data instead of calling .json()
+                      imageUrl = uploadResponse.data?.image?.url;
                     } catch (uploadError) {
                       console.error("Error uploading image:", uploadError);
                       // Continue with undefined imageUrl if upload fails
@@ -93,7 +90,7 @@ export default function ShareStory() {
                   }
                   
                   // Use the moderation API instead of direct submission
-                  const response = await apiClient.submit_content(
+                  await apiClient.submit_content(
                     { content_type: ContentType.SuccessStory },
                     {
                       title: story.title,
