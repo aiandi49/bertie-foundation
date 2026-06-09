@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/Layout';
-import { Mail, Users, MessageSquare, Award, Star, Trash2, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
+import { Mail, Users, MessageSquare, Award, Star, Trash2, RefreshCw, CheckCircle, XCircle, Download } from 'lucide-react';
 import { Button } from '../components/Button';
 import { supabase } from '../utils/supabaseClient';
-import { useAuth } from '../utils/useAuth';
+import { useAuth, logAdminActivity } from '../utils/useAuth';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -37,9 +37,30 @@ function EmptyState({ label }: { label: string }) {
   );
 }
 
+// ─── CSV Export Utility ───────────────────────────────────────────────────────
+
+function exportToCSV(rows: any[], filename: string) {
+  if (!rows.length) return;
+  const keys = Object.keys(rows[0]);
+  const header = keys.join(',');
+  const body = rows.map(r =>
+    keys.map(k => {
+      const val = r[k] === null || r[k] === undefined ? '' : String(r[k]);
+      return `"${val.replace(/"/g, '""')}"`;
+    }).join(',')
+  ).join('\n');
+  const blob = new Blob([header + '\n' + body], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ─── Tab: Newsletter ──────────────────────────────────────────────────────────
 
-function NewsletterTab() {
+function NewsletterTab({ userEmail }: { userEmail: string }) {
   const [rows, setRows] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -55,16 +76,19 @@ function NewsletterTab() {
 
   useEffect(() => { load(); }, []);
 
-  const remove = async (id: string) => {
+  const remove = async (id: string, email: string) => {
     if (!confirm('Delete this subscriber?')) return;
     setDeleting(p => ({ ...p, [id]: true }));
     await supabase.from('newsletter_subscribers').delete().eq('id', id);
+    await logAdminActivity({ action: 'delete', table_name: 'newsletter_subscribers', record_id: id, details: email, user_email: userEmail });
     setRows(p => p.filter(r => r.id !== id));
     setDeleting(p => ({ ...p, [id]: false }));
   };
 
   return (
-    <Section title="Newsletter Subscribers" count={rows.length} onRefresh={load} loading={loading} error={error}>
+    <Section title="Newsletter Subscribers" count={rows.length} onRefresh={load} loading={loading} error={error}
+      onExport={() => { exportToCSV(rows, 'newsletter-subscribers.csv'); logAdminActivity({ action: 'export', table_name: 'newsletter_subscribers', user_email: userEmail }); }}
+    >
       {rows.length === 0 ? <EmptyState label="subscribers" /> : (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-700 text-sm">
@@ -87,7 +111,7 @@ function NewsletterTab() {
                   <td className="py-3 pr-4 text-gray-400">{r.source || '—'}</td>
                   <td className="py-3 pr-4 text-gray-400 whitespace-nowrap">{fmt(r.subscribed_at)}</td>
                   <td className="py-3">
-                    <button onClick={() => remove(r.id)} disabled={deleting[r.id]} className="text-gray-500 hover:text-red-400 transition-colors">
+                    <button onClick={() => remove(r.id, r.email)} disabled={deleting[r.id]} className="text-gray-500 hover:text-red-400 transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </td>
@@ -103,7 +127,7 @@ function NewsletterTab() {
 
 // ─── Tab: Contact ─────────────────────────────────────────────────────────────
 
-function ContactTab() {
+function ContactTab({ userEmail }: { userEmail: string }) {
   const [rows, setRows] = useState<ContactReq[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -119,16 +143,19 @@ function ContactTab() {
 
   useEffect(() => { load(); }, []);
 
-  const remove = async (id: string) => {
+  const remove = async (id: string, name: string) => {
     if (!confirm('Delete this message?')) return;
     setDeleting(p => ({ ...p, [id]: true }));
     await supabase.from('contact_requests').delete().eq('id', id);
+    await logAdminActivity({ action: 'delete', table_name: 'contact_requests', record_id: id, details: name, user_email: userEmail });
     setRows(p => p.filter(r => r.id !== id));
     setDeleting(p => ({ ...p, [id]: false }));
   };
 
   return (
-    <Section title="Contact Messages" count={rows.length} onRefresh={load} loading={loading} error={error}>
+    <Section title="Contact Messages" count={rows.length} onRefresh={load} loading={loading} error={error}
+      onExport={() => { exportToCSV(rows, 'contact-messages.csv'); logAdminActivity({ action: 'export', table_name: 'contact_requests', user_email: userEmail }); }}
+    >
       {rows.length === 0 ? <EmptyState label="contact messages" /> : (
         <div className="space-y-4">
           {rows.map(r => (
@@ -140,7 +167,7 @@ function ContactTab() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-gray-500 text-xs">{fmt(r.submitted_at)}</span>
-                  <button onClick={() => remove(r.id)} disabled={deleting[r.id]} className="text-gray-500 hover:text-red-400 transition-colors">
+                  <button onClick={() => remove(r.id, r.name)} disabled={deleting[r.id]} className="text-gray-500 hover:text-red-400 transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -157,7 +184,7 @@ function ContactTab() {
 
 // ─── Tab: Volunteer ───────────────────────────────────────────────────────────
 
-function VolunteerTab() {
+function VolunteerTab({ userEmail }: { userEmail: string }) {
   const [rows, setRows] = useState<Volunteer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -173,21 +200,25 @@ function VolunteerTab() {
 
   useEffect(() => { load(); }, []);
 
-  const remove = async (id: string) => {
+  const remove = async (id: string, name: string) => {
     if (!confirm('Delete this application?')) return;
     setDeleting(p => ({ ...p, [id]: true }));
     await supabase.from('volunteer_applications').delete().eq('id', id);
+    await logAdminActivity({ action: 'delete', table_name: 'volunteer_applications', record_id: id, details: name, user_email: userEmail });
     setRows(p => p.filter(r => r.id !== id));
     setDeleting(p => ({ ...p, [id]: false }));
   };
 
-  const updateStatus = async (id: string, status: string) => {
+  const updateStatus = async (id: string, status: string, name: string) => {
     await supabase.from('volunteer_applications').update({ status }).eq('id', id);
+    await logAdminActivity({ action: status as any, table_name: 'volunteer_applications', record_id: id, details: name, user_email: userEmail });
     setRows(p => p.map(r => r.id === id ? { ...r, status } : r));
   };
 
   return (
-    <Section title="Volunteer Applications" count={rows.length} onRefresh={load} loading={loading} error={error}>
+    <Section title="Volunteer Applications" count={rows.length} onRefresh={load} loading={loading} error={error}
+      onExport={() => { exportToCSV(rows, 'volunteer-applications.csv'); logAdminActivity({ action: 'export', table_name: 'volunteer_applications', user_email: userEmail }); }}
+    >
       {rows.length === 0 ? <EmptyState label="applications" /> : (
         <div className="space-y-4">
           {rows.map(r => (
@@ -200,7 +231,7 @@ function VolunteerTab() {
                 <div className="flex items-center gap-3">
                   <Badge label={r.status || 'pending'} color={r.status === 'approved' ? 'green' : r.status === 'rejected' ? 'red' : 'yellow'} />
                   <span className="text-gray-500 text-xs">{fmt(r.submitted_at)}</span>
-                  <button onClick={() => remove(r.id)} disabled={deleting[r.id]} className="text-gray-500 hover:text-red-400 transition-colors">
+                  <button onClick={() => remove(r.id, r.name)} disabled={deleting[r.id]} className="text-gray-500 hover:text-red-400 transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -210,10 +241,10 @@ function VolunteerTab() {
               {r.message && <p className="text-gray-300 text-sm whitespace-pre-wrap mb-3">{r.message}</p>}
               {(!r.status || r.status === 'pending') && (
                 <div className="flex gap-2">
-                  <button onClick={() => updateStatus(r.id, 'approved')} className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded-lg transition-colors">
+                  <button onClick={() => updateStatus(r.id, 'approved', r.name)} className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded-lg transition-colors">
                     <CheckCircle className="w-3.5 h-3.5" /> Approve
                   </button>
-                  <button onClick={() => updateStatus(r.id, 'rejected')} className="flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition-colors">
+                  <button onClick={() => updateStatus(r.id, 'rejected', r.name)} className="flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition-colors">
                     <XCircle className="w-3.5 h-3.5" /> Reject
                   </button>
                 </div>
@@ -228,7 +259,7 @@ function VolunteerTab() {
 
 // ─── Tab: Success Stories ─────────────────────────────────────────────────────
 
-function StoriesTab() {
+function StoriesTab({ userEmail }: { userEmail: string }) {
   const [rows, setRows] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -244,21 +275,25 @@ function StoriesTab() {
 
   useEffect(() => { load(); }, []);
 
-  const remove = async (id: string) => {
+  const remove = async (id: string, title: string) => {
     if (!confirm('Delete this story?')) return;
     setDeleting(p => ({ ...p, [id]: true }));
     await supabase.from('success_stories').delete().eq('id', id);
+    await logAdminActivity({ action: 'delete', table_name: 'success_stories', record_id: id, details: title, user_email: userEmail });
     setRows(p => p.filter(r => r.id !== id));
     setDeleting(p => ({ ...p, [id]: false }));
   };
 
-  const updateStatus = async (id: string, status: string) => {
+  const updateStatus = async (id: string, status: string, title: string) => {
     await supabase.from('success_stories').update({ status }).eq('id', id);
+    await logAdminActivity({ action: status as any, table_name: 'success_stories', record_id: id, details: title, user_email: userEmail });
     setRows(p => p.map(r => r.id === id ? { ...r, status } : r));
   };
 
   return (
-    <Section title="Success Stories" count={rows.length} onRefresh={load} loading={loading} error={error}>
+    <Section title="Success Stories" count={rows.length} onRefresh={load} loading={loading} error={error}
+      onExport={() => { exportToCSV(rows, 'success-stories.csv'); logAdminActivity({ action: 'export', table_name: 'success_stories', user_email: userEmail }); }}
+    >
       {rows.length === 0 ? <EmptyState label="stories" /> : (
         <div className="space-y-4">
           {rows.map(r => (
@@ -271,7 +306,7 @@ function StoriesTab() {
                 <div className="flex items-center gap-3">
                   <Badge label={r.status || 'pending'} color={r.status === 'approved' ? 'green' : r.status === 'rejected' ? 'red' : 'yellow'} />
                   <span className="text-gray-500 text-xs">{fmt(r.timestamp)}</span>
-                  <button onClick={() => remove(r.id)} disabled={deleting[r.id]} className="text-gray-500 hover:text-red-400 transition-colors">
+                  <button onClick={() => remove(r.id, r.title)} disabled={deleting[r.id]} className="text-gray-500 hover:text-red-400 transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -284,10 +319,10 @@ function StoriesTab() {
               {r.image_url && <img src={r.image_url} alt="story" className="h-24 rounded-lg object-cover mb-3" />}
               {(!r.status || r.status === 'pending') && (
                 <div className="flex gap-2">
-                  <button onClick={() => updateStatus(r.id, 'approved')} className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded-lg transition-colors">
+                  <button onClick={() => updateStatus(r.id, 'approved', r.title)} className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded-lg transition-colors">
                     <CheckCircle className="w-3.5 h-3.5" /> Publish
                   </button>
-                  <button onClick={() => updateStatus(r.id, 'rejected')} className="flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition-colors">
+                  <button onClick={() => updateStatus(r.id, 'rejected', r.title)} className="flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition-colors">
                     <XCircle className="w-3.5 h-3.5" /> Reject
                   </button>
                 </div>
@@ -302,7 +337,7 @@ function StoriesTab() {
 
 // ─── Tab: Feedback ────────────────────────────────────────────────────────────
 
-function FeedbackTab() {
+function FeedbackTab({ userEmail }: { userEmail: string }) {
   const [rows, setRows] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -318,24 +353,28 @@ function FeedbackTab() {
 
   useEffect(() => { load(); }, []);
 
-  const remove = async (id: string) => {
+  const remove = async (id: string, comment: string) => {
     if (!confirm('Delete this feedback?')) return;
     setDeleting(p => ({ ...p, [id]: true }));
     await supabase.from('feedback').delete().eq('id', id);
+    await logAdminActivity({ action: 'delete', table_name: 'feedback', record_id: id, details: comment.slice(0, 80), user_email: userEmail });
     setRows(p => p.filter(r => r.id !== id));
     setDeleting(p => ({ ...p, [id]: false }));
   };
 
-  const toggleApprove = async (id: string, currentStatus: string) => {
+  const toggleApprove = async (id: string, currentStatus: string, comment: string) => {
     const newStatus = currentStatus === 'approved' ? 'pending' : 'approved';
     await supabase.from('feedback').update({ status: newStatus }).eq('id', id);
+    await logAdminActivity({ action: newStatus === 'approved' ? 'approve' : 'unapprove', table_name: 'feedback', record_id: id, details: comment.slice(0, 80), user_email: userEmail });
     setRows(p => p.map(r => r.id === id ? { ...r, status: newStatus } : r));
   };
 
   const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
 
   return (
-    <Section title="Feedback" count={rows.length} onRefresh={load} loading={loading} error={error}>
+    <Section title="Feedback" count={rows.length} onRefresh={load} loading={loading} error={error}
+      onExport={() => { exportToCSV(rows, 'feedback.csv'); logAdminActivity({ action: 'export', table_name: 'feedback', user_email: userEmail }); }}
+    >
       {rows.length === 0 ? <EmptyState label="feedback" /> : (
         <div className="space-y-4">
           {rows.map(r => (
@@ -348,7 +387,7 @@ function FeedbackTab() {
                 <div className="flex items-center gap-3">
                   <Badge label={r.status === 'approved' ? 'Approved' : 'Pending'} color={r.status === 'approved' ? 'green' : 'yellow'} />
                   <span className="text-gray-500 text-xs">{fmt(r.created_at)}</span>
-                  <button onClick={() => remove(r.id)} disabled={deleting[r.id]} className="text-gray-500 hover:text-red-400 transition-colors">
+                  <button onClick={() => remove(r.id, r.comment)} disabled={deleting[r.id]} className="text-gray-500 hover:text-red-400 transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -359,7 +398,7 @@ function FeedbackTab() {
               </div>
               <p className="text-gray-300 text-sm whitespace-pre-wrap mb-3">{r.comment}</p>
               <button
-                onClick={() => toggleApprove(r.id, r.status || 'pending')}
+                onClick={() => toggleApprove(r.id, r.status || 'pending', r.comment)}
                 className={`flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg transition-colors text-white ${r.status === 'approved' ? 'bg-gray-600 hover:bg-gray-700' : 'bg-green-600 hover:bg-green-700'}`}
               >
                 {r.status === 'approved' ? <><XCircle className="w-3.5 h-3.5" /> Unapprove</> : <><CheckCircle className="w-3.5 h-3.5" /> Approve</>}
@@ -374,8 +413,8 @@ function FeedbackTab() {
 
 // ─── Section Wrapper ──────────────────────────────────────────────────────────
 
-function Section({ title, count, onRefresh, loading, error, children }: {
-  title: string; count: number; onRefresh: () => void; loading: boolean; error: string; children: React.ReactNode;
+function Section({ title, count, onRefresh, onExport, loading, error, children }: {
+  title: string; count: number; onRefresh: () => void; onExport: () => void; loading: boolean; error: string; children: React.ReactNode;
 }) {
   return (
     <div>
@@ -384,10 +423,16 @@ function Section({ title, count, onRefresh, loading, error, children }: {
           <h2 className="text-2xl font-bold text-white">{title}</h2>
           {!loading && <p className="text-gray-400 text-sm mt-0.5">{count} total</p>}
         </div>
-        <button onClick={onRefresh} className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors">
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+        <div className="flex gap-2">
+          <button onClick={onExport} className="flex items-center gap-2 px-4 py-2 bg-green-700 hover:bg-green-600 text-white text-sm rounded-lg transition-colors">
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+          <button onClick={onRefresh} className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors">
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
       </div>
       {error && (
         <div className="bg-red-900/30 border border-red-700 text-red-300 px-4 py-3 rounded-lg mb-4 text-sm">
@@ -416,7 +461,7 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   { key: 'feedback',   label: 'Feedback',         icon: <Star className="w-4 h-4" /> },
 ];
 
-function AdminDashboard() {
+function AdminDashboard({ userEmail }: { userEmail: string }) {
   const [tab, setTab] = useState<TabKey>('newsletter');
 
   const handleLogout = async () => {
@@ -428,7 +473,10 @@ function AdminDashboard() {
       <div className="container mx-auto px-4 pt-8 pb-24">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">Admin Dashboard</h1>
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">Admin Dashboard</h1>
+            <p className="text-gray-400 text-sm mt-1">Signed in as <span className="text-blue-400">{userEmail}</span></p>
+          </div>
           <Button onClick={handleLogout} variant="secondary">Logout</Button>
         </div>
 
@@ -452,11 +500,11 @@ function AdminDashboard() {
 
         {/* Tab Content */}
         <div className="bg-gray-900/50 rounded-2xl p-6 border border-gray-800">
-          {tab === 'newsletter' && <NewsletterTab />}
-          {tab === 'contact'    && <ContactTab />}
-          {tab === 'volunteer'  && <VolunteerTab />}
-          {tab === 'stories'    && <StoriesTab />}
-          {tab === 'feedback'   && <FeedbackTab />}
+          {tab === 'newsletter' && <NewsletterTab userEmail={userEmail} />}
+          {tab === 'contact'    && <ContactTab    userEmail={userEmail} />}
+          {tab === 'volunteer'  && <VolunteerTab  userEmail={userEmail} />}
+          {tab === 'stories'    && <StoriesTab    userEmail={userEmail} />}
+          {tab === 'feedback'   && <FeedbackTab   userEmail={userEmail} />}
         </div>
       </div>
     </Layout>
@@ -525,6 +573,6 @@ export default function Admin() {
     );
   }
 
-  if (user && isAdmin) return <AdminDashboard />;
+  if (user && isAdmin) return <AdminDashboard userEmail={user.email || ''} />;
   return <Login />;
 }
