@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 
 // Components
 import { Navigation } from "components/Navigation";
@@ -47,7 +47,6 @@ function Lightbox({ index, onClose, onPrev, onNext }: { index: number; onClose: 
       style={{ background: "rgba(5, 10, 25, 0.93)", backdropFilter: "blur(6px)" }}
       onClick={onClose}
     >
-      {/* Close */}
       <button
         onClick={onClose}
         className="absolute top-4 right-4 z-10 text-white bg-white/10 hover:bg-white/25 rounded-full p-2 transition-colors"
@@ -56,7 +55,6 @@ function Lightbox({ index, onClose, onPrev, onNext }: { index: number; onClose: 
         <X size={24} />
       </button>
 
-      {/* Prev */}
       <button
         onClick={(e) => { e.stopPropagation(); onPrev(); }}
         className="absolute left-3 sm:left-6 text-white bg-white/10 hover:bg-white/25 rounded-full p-3 transition-colors"
@@ -65,7 +63,6 @@ function Lightbox({ index, onClose, onPrev, onNext }: { index: number; onClose: 
         <ChevronLeft size={28} />
       </button>
 
-      {/* Image */}
       <motion.div
         key={index}
         initial={{ opacity: 0, scale: 0.94 }}
@@ -81,14 +78,12 @@ function Lightbox({ index, onClose, onPrev, onNext }: { index: number; onClose: 
           className="max-w-[92vw] max-h-[88vh] w-auto h-auto rounded-xl shadow-2xl object-contain"
           style={{ boxShadow: "0 0 80px rgba(0,0,0,0.7)" }}
         />
-        {/* Caption + counter */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm text-center">
           <span>{img.alt}</span>
           <span className="ml-3 text-white/40">{index + 1} / {HERO_IMAGES.length}</span>
         </div>
       </motion.div>
 
-      {/* Next */}
       <button
         onClick={(e) => { e.stopPropagation(); onNext(); }}
         className="absolute right-3 sm:right-6 text-white bg-white/10 hover:bg-white/25 rounded-full p-3 transition-colors"
@@ -97,10 +92,9 @@ function Lightbox({ index, onClose, onPrev, onNext }: { index: number; onClose: 
         <ChevronRight size={28} />
       </button>
 
-      {/* Dot indicators */}
-      <div className="absolute bottom-4 right-4 flex gap-1.5">
+      <div className="absolute bottom-4 right-6 flex gap-1.5">
         {HERO_IMAGES.map((_, i) => (
-          <span key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === index ? "bg-white" : "bg-white/30"}`} />
+          <span key={i} className={`w-2 h-2 rounded-full transition-colors ${i === index ? "bg-white" : "bg-white/30"}`} />
         ))}
       </div>
     </motion.div>
@@ -160,7 +154,7 @@ export default function App() {
               </div>
             </motion.div>
 
-            {/* Right Images */}
+            {/* Right Images — each is clickable */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -168,35 +162,41 @@ export default function App() {
               {...scrollAnim}
               className="grid grid-cols-2 gap-10 mt-1 sm:mt-0"
             >
-              <OptimizedImage
-                src="https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/1.jpeg"
-                alt="Bertie Foundation volunteers"
-                className="w-full h-auto object-cover rounded-lg shadow-lg"
-                objectFit="cover"
-                priority={true} 
-              />
-              <OptimizedImage
-                src="https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/2b.jpeg"
-                alt="Bertie Foundation donation drive"
-                className="w-full h-auto aspect-video rounded-lg shadow-lg object-cover"
-                objectFit="cover"
-              />
-              <OptimizedImage
-                src="https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/3.jpeg"
-                alt="Community support program"
-                className="w-full h-auto aspect-video rounded-lg shadow-lg object-cover"
-                objectFit="cover" 
-              />
-              <OptimizedImage
-                src="https://zubuqhdelzdujuwtcyzx.supabase.co/storage/v1/object/public/images/4.jpeg"
-                alt="Children receiving donations"
-                className="w-full h-auto aspect-video rounded-lg shadow-lg object-cover" 
-                objectFit="cover" 
-              />
+              {HERO_IMAGES.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => openLightbox(i)}
+                  className="relative group w-full rounded-lg overflow-hidden shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  aria-label={`View full image: ${img.alt}`}
+                >
+                  <OptimizedImage
+                    src={img.src}
+                    alt={img.alt}
+                    className={`w-full h-auto ${i === 0 ? "object-cover" : "aspect-video object-cover"} rounded-lg transition-transform duration-300 group-hover:scale-105`}
+                    objectFit="cover"
+                    priority={i === 0}
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center rounded-lg">
+                    <ZoomIn className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" size={32} />
+                  </div>
+                </button>
+              ))}
             </motion.div>
           </div>
         </div>
       </section>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightboxIndex !== null && (
+          <Lightbox
+            index={lightboxIndex}
+            onClose={closeLightbox}
+            onPrev={prevImage}
+            onNext={nextImage}
+          />
+        )}
+      </AnimatePresence>
 
       <Footer />
     </div>
