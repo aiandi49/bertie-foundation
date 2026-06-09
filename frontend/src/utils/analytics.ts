@@ -1,4 +1,4 @@
-import { apiClient } from "app";
+import { supabase } from "./supabaseClient";
 
 export const ANALYTICS_EVENTS = {
   USER_INTERACTION: {
@@ -23,7 +23,8 @@ export const ANALYTICS_EVENTS = {
     SHARE: "testimonial_share"
   },
   IMPACT: {
-    VIEW: "impact_stats_view"
+    VIEW: "impact_stats_view",
+    REFRESH: "impact_stats_refresh"
   }
 } as const;
 
@@ -34,22 +35,46 @@ interface TrackEventParams {
   metadata?: Record<string, any>;
 }
 
-export const trackEvent = async (params: TrackEventParams) => {
-  // Validate required fields
-  if (!params || !params.event_type || !params.component || !params.action) {
-    console.error('Missing required fields for tracking event:', params);
-    return;
+// Supports BOTH call signatures used across the codebase:
+//   trackEvent({ event_type, component, action, metadata })  — object form
+//   trackEvent("component", "action", metadata)              — legacy 3-arg form
+export const trackEvent = async (
+  paramsOrComponent: TrackEventParams | string,
+  action?: string,
+  metadata?: Record<string, any>
+): Promise<void> => {
+  let event_type: string;
+  let component: string;
+  let act: string;
+  let meta: Record<string, any>;
+
+  if (typeof paramsOrComponent === "string") {
+    // Legacy 3-arg form: trackEvent("component", "action", metadata)
+    component = paramsOrComponent;
+    act = action || "";
+    event_type = "user_interaction";
+    meta = metadata || {};
+  } else {
+    // Object form
+    const p = paramsOrComponent;
+    if (!p?.event_type || !p?.component || !p?.action) return;
+    event_type = p.event_type;
+    component = p.component;
+    act = p.action;
+    meta = p.metadata || {};
   }
 
+  if (!component || !act) return;
+
   try {
-    await apiClient.track_event({
-      event_type: params.event_type,
-      component: params.component,
-      action: params.action,
-      metadata: params.metadata || {},
-      timestamp: new Date().toISOString()
+    await supabase.from("analytics_events").insert({
+      event_type,
+      component,
+      action: act,
+      metadata: meta,
+      timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error("Error tracking event:", error);
+  } catch {
+    // Non-fatal — analytics should never break the app
   }
 };
