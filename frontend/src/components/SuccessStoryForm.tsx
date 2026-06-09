@@ -93,8 +93,12 @@ export function SuccessStoryForm({ onSubmit, loading = false, error = "" }: Prop
 
   const handleEvent = async (action: string, metadata?: any) => {
     try {
-      await trackEvent("success_story_form", action, metadata);
-
+      await trackEvent({
+        event_type: "user_interaction",
+        component: "success_story_form",
+        action: action,
+        metadata: metadata
+      });
     } catch (error) {
       console.error("Error tracking event:", error);
     }
@@ -115,7 +119,7 @@ export function SuccessStoryForm({ onSubmit, loading = false, error = "" }: Prop
     setIsPreviewOpen(true);
   };
   
-  const submitForm = () => {
+  const submitForm = async (): Promise<boolean> => {
     // Validate form before submission
     if (!formData.title || !formData.story || !formData.program || !formData.impact || !formData.name || !formData.email) {
       showToast("Please fill in all required fields", "error");
@@ -130,7 +134,7 @@ export function SuccessStoryForm({ onSubmit, loading = false, error = "" }: Prop
     }
     
     // Only now do we actually submit the form data
-    onSubmit({ ...formData, image: image || undefined });
+    await onSubmit({ ...formData, image: image || undefined });
     return true;
   };
 
