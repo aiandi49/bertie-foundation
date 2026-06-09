@@ -3,8 +3,7 @@ import { motion, HTMLMotionProps } from "framer-motion";
 import type { FC } from "react";
 import { Send, Mail, User, MessageSquare } from "lucide-react";
 import { trackEvent } from "../utils/analytics";
-import { apiClient } from "app";
-import { ContentType } from "types";
+import { supabase } from "../utils/supabaseClient";
 
 interface ContactFormData {
   name: string;
@@ -32,27 +31,21 @@ export function ContactForm() {
     setError("");
 
     try {
-      // Submit through moderation API
-      const response = await apiClient.submit_content({
-        content_type: ContentType.Contact,
-        content: {
+      const { error: dbError } = await supabase
+        .from("contact_requests")
+        .insert({
           name: formData.name,
           email: formData.email,
           subject: formData.subject,
           message: formData.message,
-          category: formData.category
-        }
-      });
+          category: formData.category,
+          status: "received",
+        });
 
-      // If we get here, the request succeeded (errors are thrown by the HTTP client)
+      if (dbError) throw dbError;
+
       setSuccess(true);
-      setFormData({
-        name: "",
-        email: "",
-        subject: "",
-        message: "",
-        category: "general"
-      });
+      setFormData({ name: "", email: "", subject: "", message: "", category: "general" });
       trackEvent("contact_form", "submit_success");
     } catch (error: any) {
       console.error("Error submitting contact form:", error);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
-import { apiClient } from "app";
+import { supabase } from "../utils/supabaseClient";
 import { Globe, Instagram, Linkedin, Mail, X, Youtube, CheckCircle, ArrowRight, User, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "components/Button";
@@ -26,29 +26,32 @@ export function Footer() {
     setIsLoading(true);
 
     try {
-      const response = await apiClient.subscribe_to_newsletter({
-        name: name,
-        email: email,
-        source: 'footer'
-      });
-      
-      const data = response.data;
-      console.log('Subscription response:', data);
-      
-      setName('');
-      setEmail('');
+      // Check if already subscribed
+      const { data: existing } = await supabase
+        .from("newsletter_subscribers")
+        .select("id")
+        .eq("email", email.toLowerCase())
+        .maybeSingle();
 
-      if (data?.message?.includes("already subscribed")) {
-        setSuccess(`You are already subscribed. Please check your inbox for confirmation.`);
-        setShowSuccessModal(false); 
+      if (existing) {
+        setSuccess("You are already subscribed. Please check your inbox for confirmation.");
+        setShowSuccessModal(false);
       } else {
-        setSuccess('Successfully Subscribed!');
+        const { error: dbError } = await supabase
+          .from("newsletter_subscribers")
+          .insert({ name, email: email.toLowerCase(), source: "footer", status: "active" });
+
+        if (dbError) throw dbError;
+
+        setSuccess("Successfully Subscribed!");
         setShowSuccessModal(true);
       }
+
+      setName("");
+      setEmail("");
     } catch (error: any) {
       console.error('Subscription error:', error);
-      const message = error?.error?.message || error?.error?.detail || 'An error occurred. Please try again later.';
-      setError(message);
+      setError('An error occurred. Please try again later.');
     } finally {
       setIsLoading(false);
     }
