@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { apiClient } from "app";
+import { supabase } from "../utils/supabaseClient";
 import { motion } from 'framer-motion';
 import { Play, Pause, Maximize2, Volume2, VolumeX } from 'lucide-react';
 
@@ -22,7 +22,7 @@ export function VideoPlayer({ title, description, date, thumbnailUrl, videoUrl, 
 
   const trackVideoEvent = useCallback(async (action: string) => {
     try {
-      await apiClient.track_event({
+      await supabase.from("analytics_events").insert({
         event_type: "video_interaction",
         component: "VideoPlayer",
         action,
