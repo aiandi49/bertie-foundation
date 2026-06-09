@@ -1,33 +1,27 @@
 import React, { useState } from "react";
 import { Layout } from "../components/Layout";
 import { SuccessStoryForm } from "../components/SuccessStoryForm";
-// import { FormService } from "../utils/formService";
-import { FormServiceFallback as FormService } from "../utils/formServiceFallback";
 import { motion } from "framer-motion";
 import { CheckCircle } from "lucide-react";
 import { Button } from "../components/Button";
-import { apiClient } from "app";
-import { ContentType } from "../apiclient/data-contracts"; // FIX 1: correct import path
-import { Award, Users, TrendingUp } from "lucide-react";
 import { trackEvent } from "../utils/analytics";
+import { supabase } from "../utils/supabaseClient";
 
 export default function ShareStory() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
-  
-  // Track page view
+
   React.useEffect(() => {
     trackEvent({
       event_type: "page_view",
       component: "ShareStory",
-      action: "view"
+      action: "view",
     });
   }, []);
-  
+
   return (
     <Layout>
-      {/* Hero Section - Simplified */}
       <section className="bg-gradient-to-r from-primary-900 to-primary-800 py-10 px-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=1920')] opacity-5 bg-cover bg-center" />
         <div className="container mx-auto text-center relative z-10">
@@ -39,7 +33,7 @@ export default function ShareStory() {
           </p>
           <div className="max-w-4xl mx-auto bg-secondary-900/50 backdrop-blur-sm p-6 rounded-xl shadow-lg">
             {success ? (
-              <motion.div 
+              <motion.div
                 className="p-8 bg-secondary-800/50 backdrop-blur rounded-xl text-center"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -55,85 +49,59 @@ export default function ShareStory() {
                 <p className="text-gray-400 mb-8">
                   We'll review your submission and may feature it on our platforms. We might reach out if we need any additional information.
                 </p>
-                <Button 
-                  onClick={() => setSuccess(false)}
-                  className="mx-auto"
-                >
+                <Button onClick={() => setSuccess(false)} className="mx-auto">
                   Share Another Story
                 </Button>
               </motion.div>
             ) : (
-              <SuccessStoryForm onSubmit={async (story) => {
-                setLoading(true);
-                setError("");
-                
-                try {
-                  // Handle image upload if provided
-                  let imageUrl = undefined;
-                  
-                  if (story.image) {
-                    try {
-                      // Upload image
-                      const uploadResponse = await apiClient.upload_image({
+              <SuccessStoryForm
+                onSubmit={async (story) => {
+                  setLoading(true);
+                  setError("");
+
+                  try {
+                    // Insert directly into Supabase — no backend needed
+                    const { error: dbError } = await supabase
+                      .from("success_stories")
+                      .insert({
                         title: story.title,
-                        category: "success-stories",
-                        description: `Success story image for ${story.name}`
-                      }, { file: story.image });
-                      
-                      // FIX 2: apiClient returns the parsed response directly (not a raw Response),
-                      // so we access .data instead of calling .json()
-                      imageUrl = uploadResponse.data?.image?.url;
-                    } catch (uploadError) {
-                      console.error("Error uploading image:", uploadError);
-                      // Continue with undefined imageUrl if upload fails
-                    }
+                        story: story.story,
+                        program: story.program,
+                        impact: story.impact,
+                        name: story.name,
+                        email: story.email,
+                        image_url: null, // image upload requires storage bucket setup
+                        tags: story.tags,
+                        status: "pending",
+                        timestamp: new Date().toISOString(),
+                      });
+
+                    if (dbError) throw dbError;
+
+                    await trackEvent({
+                      event_type: "form_submit",
+                      component: "ShareStory",
+                      action: "submit_success",
+                      metadata: { program: story.program },
+                    });
+
+                    setSuccess(true);
+                  } catch (err: any) {
+                    console.error("Error submitting story:", err);
+                    setError(
+                      "We encountered an issue while sharing your story. Please try again."
+                    );
+                  } finally {
+                    setLoading(false);
                   }
-                  
-                  // Use the moderation API instead of direct submission
-                  await apiClient.submit_content(
-                    { content_type: ContentType.SuccessStory },
-                    {
-                      title: story.title,
-                      story: story.story,
-                      program: story.program,
-                      impact: story.impact,
-                      name: story.name,
-                      email: story.email,
-                      imageUrl: imageUrl,
-                      tags: story.tags
-                    }
-                  );
-                  
-                  // If we get here, the request succeeded (errors are thrown by the HTTP client)
-                  
-                  // Also save to local storage for backup/fallback
-                  await FormService.submitSuccessStory({
-                    title: story.title,
-                    story: story.story,
-                    program: story.program,
-                    impact: story.impact,
-                    name: story.name,
-                    email: story.email,
-                    imageUrl: imageUrl,
-                    tags: story.tags
-                  });
-                  
-                  setSuccess(true);
-                } catch (error) {
-                  console.error("Error submitting story:", error);
-                  setError("We encountered an issue while sharing your story. Please try again.");
-                } finally {
-                  setLoading(false);
-                }
-              }} 
-              loading={loading}
-              error={error}
-            />
+                }}
+                loading={loading}
+                error={error}
+              />
             )}
           </div>
         </div>
       </section>
-      
     </Layout>
   );
 }
