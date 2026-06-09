@@ -2,8 +2,8 @@ import { motion } from "framer-motion";
 import { Layout } from "../components/Layout";
 import { Mail, Phone, MapPin, Clock, Facebook, Twitter, Instagram, Linkedin, Youtube, Globe, X } from "lucide-react";
 import { Button } from "../components/Button";
-import { apiClient } from "app";
 import { useState } from "react";
+import { supabase } from "../utils/supabaseClient";
 
 export default function ContactUs() {
   const [loading, setLoading] = useState(false);
@@ -30,15 +30,19 @@ export default function ContactUs() {
     setError("");
     
     try {
-      const response = await apiClient.submit_contact({
-        name: formData.name,
-        email: formData.email,
-        subject: formData.subject,
-        message: formData.message,
-        category: formData.category || "general"
-      });
+      const { error: dbError } = await supabase
+        .from("contact_requests")
+        .insert({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+          category: formData.category || "general",
+          status: "received",
+        });
 
-      // If we get here, the request succeeded (errors are thrown by the HTTP client)
+      if (dbError) throw dbError;
+
       setSuccess(true);
       setFormData({ name: "", email: "", subject: "", message: "", category: "" });
     } catch (error) {
