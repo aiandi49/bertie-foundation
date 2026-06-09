@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { apiClient } from 'app';
+import { supabase } from './supabaseClient';
 
 type Notification = {
   id: string;
@@ -30,24 +30,32 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
   fetchNotifications: async () => {
     set({ loading: true });
     try {
-      const response = await apiClient.get_notifications();
-      const data = await response.json();
-      set({ notifications: data });
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+      if (!error && data) {
+        set({ notifications: data as Notification[] });
+      }
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      // Silently fail — notifications are non-critical
     } finally {
       set({ loading: false });
     }
   },
   addNotification: async (notification) => {
     try {
-      const response = await apiClient.create_notification(
-        notification
-      );
-      const newNotification = await response.json();
-      set((state) => ({
-        notifications: [...state.notifications, newNotification]
-      }));
+      const { data, error } = await supabase
+        .from('notifications')
+        .insert({ ...notification })
+        .select()
+        .single();
+      if (!error && data) {
+        set((state) => ({
+          notifications: [data as Notification, ...state.notifications],
+        }));
+      }
     } catch (error) {
       console.error('Error adding notification:', error);
     }
