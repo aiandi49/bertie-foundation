@@ -34,6 +34,7 @@ import TestForms from "./pages/TestForms.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
 import Videos from "./pages/Videos.tsx";
 import Vision from "./pages/Vision.tsx";
+import VolunteerApply from "./pages/VolunteerApply.tsx";
 import WhoIsBertie from "./pages/WhoIsBertie.tsx";
 
 export const userRoutes: RouteObject[] = [
@@ -87,7 +88,8 @@ export const userRoutes: RouteObject[] = [
 	{ path: "/unsubscribe", element: <Unsubscribe /> },
 	{ path: "/videos", element: <Videos /> },
 	{ path: "/vision", element: <Vision /> },
-	{ path: "/volunteer", element: <ContactUs /> },
+	{ path: "/volunteer", element: <VolunteerApply /> },
+	{ path: "/volunteer-apply", element: <VolunteerApply /> },
 	{ path: "/who-is-bertie", element: <WhoIsBertie /> },
 	{ path: "/whoisbertie", element: <WhoIsBertie /> },
 

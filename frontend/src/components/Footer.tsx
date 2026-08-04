@@ -26,23 +26,22 @@ export function Footer() {
     setIsLoading(true);
 
     try {
-      // Check if already subscribed
-      const { data: existing } = await supabase
+      // Insert directly and rely on the email UNIQUE constraint to catch
+      // duplicates (Postgres error code 23505). This avoids needing a public
+      // SELECT policy on newsletter_subscribers, which would otherwise let
+      // anyone query the full subscriber list via the anon key.
+      const { error: dbError } = await supabase
         .from("newsletter_subscribers")
-        .select("id")
-        .eq("email", email.toLowerCase())
-        .maybeSingle();
+        .insert({ name, email: email.toLowerCase(), source: "footer", status: "active" });
 
-      if (existing) {
-        setSuccess("You are already subscribed. Please check your inbox for confirmation.");
-        setShowSuccessModal(false);
+      if (dbError) {
+        if (dbError.code === "23505") {
+          setSuccess("You are already subscribed. Please check your inbox for confirmation.");
+          setShowSuccessModal(false);
+        } else {
+          throw dbError;
+        }
       } else {
-        const { error: dbError } = await supabase
-          .from("newsletter_subscribers")
-          .insert({ name, email: email.toLowerCase(), source: "footer", status: "active" });
-
-        if (dbError) throw dbError;
-
         setSuccess("Successfully Subscribed!");
         setShowSuccessModal(true);
       }

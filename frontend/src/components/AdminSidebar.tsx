@@ -1,16 +1,8 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  Newspaper,
-  MessageSquare,
-  Users,
-  Award,
-  Star,
   DollarSign,
   PieChart,
-  ShieldAlert,
-  FileText,
-  Menu,
   X,
   BookOpen
 } from "lucide-react";
@@ -23,6 +15,14 @@ interface AdminSidebarProps {
 export function AdminSidebar({ isOpen, toggleSidebar }: AdminSidebarProps) {
   const { pathname } = useLocation();
 
+  // NOTE: Dashboard (/admin) is the single unified admin panel — it already
+  // has tabs for Newsletter, Contact, Volunteer, Stories, and Feedback, each
+  // wired to the correct table. The old separate pages this sidebar used to
+  // link to (/moderation, /content-admin, /newsletter-admin, /volunteer-admin,
+  // /stories-admin) were never registered as routes — they were dead links.
+  // /feedbackadmin was a registered route but was left as an unfinished
+  // placeholder, so it's removed here too in favor of the Feedback tab in
+  // the main dashboard. Keeping this nav honest matters for handoff.
   const navItems = [
     {
       name: "Dashboard",
@@ -30,39 +30,9 @@ export function AdminSidebar({ isOpen, toggleSidebar }: AdminSidebarProps) {
       icon: <PieChart className="w-5 h-5" />
     },
     {
-      name: "Moderation",
-      path: "/moderation",
-      icon: <ShieldAlert className="w-5 h-5" />
-    },
-    {
       name: "Campaigns",
       path: "/campaign-admin",
       icon: <DollarSign className="w-5 h-5" />
-    },
-    {
-      name: "Content",
-      path: "/content-admin",
-      icon: <FileText className="w-5 h-5" />
-    },
-    {
-      name: "Newsletter",
-      path: "/newsletter-admin",
-      icon: <Newspaper className="w-5 h-5" />
-    },
-    {
-      name: "Feedback",
-      path: "/feedbackadmin",
-      icon: <MessageSquare className="w-5 h-5" />
-    },
-    {
-      name: "Volunteers",
-      path: "/volunteer-admin",
-      icon: <Users className="w-5 h-5" />
-    },
-    {
-      name: "Success Stories",
-      path: "/stories-admin",
-      icon: <Star className="w-5 h-5" />
     },
     {
       name: "Documentation",

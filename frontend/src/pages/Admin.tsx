@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/Layout';
-import { Mail, Users, MessageSquare, Award, Star, Trash2, RefreshCw, CheckCircle, XCircle, Download } from 'lucide-react';
+import { Mail, Users, MessageSquare, Award, Star, Trash2, RefreshCw, CheckCircle, XCircle, Download, FileSpreadsheet } from 'lucide-react';
 import { Button } from '../components/Button';
 import { supabase } from '../utils/supabaseClient';
 import { useAuth, logAdminActivity } from '../utils/useAuth';
+import * as XLSX from 'xlsx';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -56,6 +57,44 @@ function exportToCSV(rows: any[], filename: string) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// ─── Excel (.xlsx) Export — one workbook, one sheet per form type ─────────────
+// This is the "beautiful Excel file" export: it pulls every table fresh,
+// builds a real formatted workbook (auto-sized columns, one tab per form),
+// and downloads it in a single click — not a CSV per tab.
+
+async function exportAllToExcel(userEmail: string) {
+  const tables: { key: string; sheetName: string; orderBy: string }[] = [
+    { key: 'newsletter_subscribers', sheetName: 'Newsletter Signups', orderBy: 'subscribed_at' },
+    { key: 'contact_requests', sheetName: 'Contact Messages', orderBy: 'submitted_at' },
+    { key: 'volunteer_applications', sheetName: 'Volunteer Applications', orderBy: 'submitted_at' },
+    { key: 'success_stories', sheetName: 'Success Stories', orderBy: 'timestamp' },
+    { key: 'feedback', sheetName: 'Feedback', orderBy: 'created_at' },
+  ];
+
+  const workbook = XLSX.utils.book_new();
+
+  for (const t of tables) {
+    const { data, error } = await supabase.from(t.key).select('*').order(t.orderBy, { ascending: false });
+    const rows = error || !data ? [] : data;
+    const sheet = XLSX.utils.json_to_sheet(rows.length ? rows : [{ note: 'No submissions yet' }]);
+
+    // Auto-size columns roughly based on content length
+    if (rows.length) {
+      const keys = Object.keys(rows[0]);
+      sheet['!cols'] = keys.map(k => ({
+        wch: Math.min(60, Math.max(12, k.length, ...rows.map(r => String(r[k] ?? '').length))),
+      }));
+    }
+
+    XLSX.utils.book_append_sheet(workbook, sheet, t.sheetName.slice(0, 31)); // Excel sheet name limit
+  }
+
+  const dateStr = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(workbook, `bertie-foundation-export-${dateStr}.xlsx`);
+
+  await logAdminActivity({ action: 'export', table_name: 'all_tables', user_email: userEmail, details: 'Full Excel export' });
 }
 
 // ─── Tab: Newsletter ──────────────────────────────────────────────────────────
@@ -463,21 +502,37 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
 
 function AdminDashboard({ userEmail }: { userEmail: string }) {
   const [tab, setTab] = useState<TabKey>('newsletter');
+  const [exporting, setExporting] = useState(false);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+  };
+
+  const handleExportAll = async () => {
+    setExporting(true);
+    try {
+      await exportAllToExcel(userEmail);
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
     <Layout>
       <div className="container mx-auto px-4 pt-8 pb-24">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-wrap justify-between items-center gap-3 mb-8">
           <div>
             <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">Admin Dashboard</h1>
             <p className="text-gray-400 text-sm mt-1">Signed in as <span className="text-blue-400">{userEmail}</span></p>
           </div>
-          <Button onClick={handleLogout} variant="secondary">Logout</Button>
+          <div className="flex gap-2">
+            <Button onClick={handleExportAll} variant="secondary" disabled={exporting}>
+              <FileSpreadsheet className="w-4 h-4 mr-2 inline" />
+              {exporting ? 'Building workbook…' : 'Export All to Excel'}
+            </Button>
+            <Button onClick={handleLogout} variant="secondary">Logout</Button>
+          </div>
         </div>
 
         {/* Tab Bar */}
