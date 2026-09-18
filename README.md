@@ -1,107 +1,62 @@
 # bertie-foundation
 
-This is a full-stack application exported from Riff.
+Nonprofit web app for The Bertie Foundation — donation management, blog, volunteer opportunities, and an admin dashboard.
 
 ## Architecture
 
-- **Frontend**: React + TypeScript + Vite
-- **Backend**: Python + FastAPI
-- **Database**: PostgreSQL (Neon)
+- **Frontend**: React + TypeScript + Vite, hosted on Vercel
+- **Backend**: Supabase — Postgres database, Auth, Storage, and Edge Functions (no separate backend server)
+- **Transactional email**: Resend, called from Supabase Edge Functions
 
-## Quick Start
-
-**See `GETTING_STARTED.md` for step-by-step setup instructions.**
-
-This README provides technical reference and overview.
+There is no standalone backend service. Form submissions (contact, volunteer, feedback, newsletter) are handled by Supabase Edge Functions, which write to Postgres and send confirmation emails directly — nothing runs on Render, Railway, or any other host besides Vercel (frontend) and Supabase (everything else).
 
 ## Project Structure
 
 ```
 .
-├── backend/           # Python FastAPI backend
-│   ├── app/          # Application code
-│   │   ├── apis/     # API endpoints
-│   │   ├── libs/     # Shared libraries
-│   │   ├── auth/     # Authentication logic
-│   │   └── ...
-│   ├── .env          # Shared environment variables
-│   ├── .env.dev      # Development environment variables
-│   ├── .env.prod     # Production environment variables
-│   └── pyproject.toml
-├── frontend/          # React frontend
+├── frontend/                # React frontend (Vercel)
 │   ├── src/
-│   │   ├── pages/    # Page components
-│   │   ├── components/ # Reusable components
-│   │   └── ...
+│   │   ├── pages/            # Page components (ContactUs.tsx, VolunteerApply.tsx, Feedback.tsx, Admin.tsx, ...)
+│   │   ├── components/       # Reusable components
+│   │   └── utils/
+│   │       ├── supabaseClient.ts   # Supabase client (anon key)
+│   │       └── backendApi.ts       # Calls Supabase Edge Functions for form submissions
 │   └── package.json
+├── supabase_setup_v2.sql     # Table definitions + RLS policies — run in Supabase SQL Editor
+└── vercel.json
 ```
 
-## Environment Variables
+Supabase Edge Functions live inside the Supabase project itself (Dashboard → Edge Functions), not in this repo:
+- `submit-contact`, `submit-volunteer`, `submit-feedback`, `subscribe-newsletter` — handle the 4 public forms
+- `notify-admin` — emails the admin list when a row lands in `contact_requests` / `volunteer_applications` / `feedback` / `success_stories`
+- `weekly-digest` — Friday cron job, emails admins a CSV summary of the week's forms
 
-Backend environment variables are split across three files:
+## Database
 
-### `.env` (Shared)
+Run `supabase_setup_v2.sql` in your Supabase project's SQL Editor to create the tables (`contact_requests`, `volunteer_applications`, `newsletter_subscribers`, `feedback`, `success_stories`, `analytics_events`, `admin_activity_log`) and Row Level Security policies. It's idempotent — safe to re-run.
 
-### `.env.dev` (Development)
-- Development-specific secrets (database URLs, API keys, etc.)
+## Environment / Secrets
 
-### `.env.prod` (Production)
-- Production-specific secrets (database URLs, API keys, etc.)
+**Frontend (Vercel):** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` — set in Vercel → Project → Environment Variables.
 
-The backend automatically loads `.env` first, then overrides with `.env.dev` or `.env.prod` based on the `ENV` environment variable (defaults to `dev`).
-
-
-### Database Connection Strings
-Database connection strings are included in `.env.dev` and `.env.prod` for their respective environments.
+**Supabase Edge Functions:** secrets are set per-project in Supabase → Edge Functions → Secrets, not in this repo. Currently used: `RESEND_API_KEY`, `SMTP_EMAIL`, `SUPABASE_SERVICE_ROLE_KEY` (auto-injected by Supabase), `ADMIN_EMAILS`.
 
 ## Development
 
-### Install Dependencies
-
 ```bash
-# Backend
-cd backend
-uv sync
-
-# Frontend
 cd frontend
 yarn install
+yarn dev
 ```
 
-### Run Locally
+## Admin Dashboard
 
-```bash
-# Terminal 1 - Backend
-cd backend && ./run.sh
-
-# Terminal 2 - Frontend
-cd frontend && ./run.sh
-```
-
-## API Structure
-
-API endpoints are defined in `backend/app/apis/`. The FastAPI app automatically registers routes based on the structure.
-
-## Frontend Structure
-
-React pages are defined in `frontend/src/pages/`. The app uses React Router for navigation.
-
-## Limitations
-
-This exported code doesn't include:
-- Riff workspace features
-- Platform-managed secrets (moved to .env)
-- Automatic schedule execution (see SCHEDULES.md)
-- Riff integrations
+`/admin` — gated to the email addresses listed in `frontend/src/utils/useAuth.ts` (`ADMIN_EMAILS`). Includes an Org Chart tab, form submission views, and Excel export.
 
 ## Deployment
 
-This app can be deployed to:
-- Vercel (frontend) + Render (backend)
-- fly.io
-- Google Cloud Run
-- AWS
-- Any hosting platform
+- **Frontend**: Vercel, auto-deploys from `main`
+- **Backend**: Supabase (no separate deploy step — Edge Functions are deployed directly via the Supabase Dashboard or CLI)
 
 ## License
 
