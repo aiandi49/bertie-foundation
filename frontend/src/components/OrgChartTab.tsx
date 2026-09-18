@@ -78,9 +78,12 @@ export default function OrgChartTab() {
   const [activePerson, setActivePerson] = useState<string | null>(null);
 
   const activeData = activePerson ? PEOPLE[activePerson] : null;
+  const activeDept = activePerson
+    ? DEPARTMENTS.find((d) => d.name === activePerson || d.name === activeData?.alias)
+    : null;
 
   return (
-    <div className="bf-org" data-theme={theme} data-size={size}>
+    <div className="bf-org" data-theme={theme} data-size={size} id="bfOrgRoot">
       <style>{CSS}</style>
 
       <div className="bf-toolbar">
@@ -113,106 +116,125 @@ export default function OrgChartTab() {
       </div>
 
       <div className="bf-body">
-        <div className="bf-grid">
-          <div className="bf-side">
-            <div className="bf-panel">
-              <div className="bf-panel-head">Founders</div>
-              <ul className="bf-list">
-                {FOUNDERS.map((name) => (
-                  <li key={name}>
-                    <button className="bf-person-btn" onClick={() => setActivePerson(name)}>
-                      <span>{name}</span>
-                      <span className="arrow">&rsaquo;</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="bf-panel">
-              <div className="bf-panel-head navy">Mentor / Advisor</div>
-              <ul className="bf-list">
-                {MENTOR_ADVISOR.map((m) => (
-                  <li key={m.name}>
-                    <button className="bf-person-btn" onClick={() => setActivePerson(m.name)}>
-                      <span>{m.name} <span style={{ opacity: 0.6, fontWeight: 500 }}>&mdash; {m.role}</span></span>
-                      <span className="arrow">&rsaquo;</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="bf-main">
-            <div className="bf-board-wrap">
-              <div className="bf-bar">Board of Directors</div>
-              <div className="bf-board-grid">
-                {BOARD.map((b) => (
-                  <button key={b.role} className="bf-board-card" onClick={() => setActivePerson(b.name)}>
-                    <div className="role">{b.role}</div>
-                    <div className="name">{b.name}</div>
-                  </button>
-                ))}
+        {!activePerson ? (
+          <div className="bf-grid">
+            <div className="bf-side">
+              <div className="bf-panel">
+                <div className="bf-panel-head">Founders</div>
+                <ul className="bf-list">
+                  {FOUNDERS.map((name) => (
+                    <li key={name}>
+                      <button className="bf-person-btn" onClick={() => setActivePerson(name)}>
+                        <span>{name}</span>
+                        <span className="arrow">&rsaquo;</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bf-panel">
+                <div className="bf-panel-head navy">Mentor / Advisor</div>
+                <ul className="bf-list">
+                  {MENTOR_ADVISOR.map((m) => (
+                    <li key={m.name}>
+                      <button className="bf-person-btn" onClick={() => setActivePerson(m.name)}>
+                        <span>{m.name} <span style={{ opacity: 0.6, fontWeight: 500 }}>&mdash; {m.role}</span></span>
+                        <span className="arrow">&rsaquo;</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
 
-            <div>
-              <div className="bf-bar">Administration &amp; Functional Areas</div>
-              <div className="bf-admin-grid">
-                {DEPARTMENTS.map((d) => (
-                  <div className="bf-dept" key={d.title}>
-                    <button className="bf-dept-head" onClick={() => setActivePerson(d.name)}>
-                      <span className="title">{d.title}</span>
-                      <span className="name">{d.name}</span>
+            <div className="bf-main">
+              <div className="bf-board-wrap">
+                <div className="bf-bar">Board of Directors</div>
+                <div className="bf-connector for-board" aria-hidden="true">
+                  <div className="bf-connector-row">{BOARD.map((b) => <span key={b.role} />)}</div>
+                </div>
+                <div className="bf-board-grid">
+                  {BOARD.map((b) => (
+                    <button key={b.role} className="bf-board-card" onClick={() => setActivePerson(b.name)}>
+                      <div className="role">{b.role}</div>
+                      <div className="name">{b.name}</div>
                     </button>
-                    <div className="bf-subs">
-                      {d.subs.map((s) => (
-                        <div className="bf-sub" key={s}>{s}</div>
-                      ))}
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="bf-bar">Administration &amp; Functional Areas</div>
+                <div className="bf-connector for-admin" aria-hidden="true">
+                  <div className="bf-connector-row">{DEPARTMENTS.map((d) => <span key={d.title} />)}</div>
+                </div>
+                <div className="bf-admin-grid">
+                  {DEPARTMENTS.map((d) => (
+                    <div className="bf-dept" key={d.title}>
+                      <button className="bf-dept-head" onClick={() => setActivePerson(d.name)}>
+                        <span className="title">{d.title}</span>
+                        <span className="name">{d.name}</span>
+                      </button>
+                      <div className="bf-subs">
+                        {d.subs.map((s) => (
+                          <div className="bf-sub" key={s}>{s}</div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+
+              <div className="bf-bracket" aria-hidden="true">
+                <svg viewBox="0 0 100 10" preserveAspectRatio="none">
+                  <path d="M0,0 C 30,10 70,10 100,0" fill="none" stroke="currentColor" strokeWidth="0.6" opacity="0.35" />
+                </svg>
+              </div>
+
+              <div className="bf-banner">
+                <h2>General Members &middot; The Bertie Foundation Volunteer Community</h2>
+                <p>Creating Lasting Impact &#10084; We Help Those In Need</p>
               </div>
             </div>
-
-            <div className="bf-bracket" aria-hidden="true">
-              <svg viewBox="0 0 100 10" preserveAspectRatio="none">
-                <path d="M0,0 C 30,10 70,10 100,0" fill="none" stroke="currentColor" strokeWidth="0.6" opacity="0.35" />
-              </svg>
+          </div>
+        ) : (
+          <div className="bf-profile">
+            <button className="bf-profile-back" onClick={() => setActivePerson(null)}>&larr; Back to Org Chart</button>
+            <div className="bf-profile-hero">
+              <div className="bf-profile-photo" style={{ background: colorFor(activePerson) }}>
+                {initials(activePerson)}
+              </div>
+              <div className="bf-profile-heading">
+                <h2>{activeData?.alias || activePerson}</h2>
+                <div className="bf-badges">
+                  {activeData?.roles.map((r) => (
+                    <span className="bf-badge" key={r}>{r}</span>
+                  ))}
+                </div>
+              </div>
             </div>
-
-            <div className="bf-banner">
-              <h2>General Members &middot; The Bertie Foundation Volunteer Community</h2>
-              <p>Creating Lasting Impact &#10084; We Help Those In Need</p>
+            <div className="bf-profile-body">
+              <div className="bf-profile-section">
+                <h4>About</h4>
+                <p className="bio">{activeData?.bio}</p>
+              </div>
+              {activeDept && (
+                <div className="bf-profile-section">
+                  <h4>Leads</h4>
+                  <ul className="bf-profile-focus">
+                    {activeDept.subs.map((s) => (
+                      <li key={s}>{s}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="bf-footer">
         www.bertiefoundation.org &middot; info@bertiefoundation.org &middot; A 501(c)(3) Public Charity Registered in South Carolina, USA
-      </div>
-
-      <div className={`bf-modal-overlay ${activePerson ? 'open' : ''}`} onClick={(e) => { if (e.target === e.currentTarget) setActivePerson(null); }}>
-        <div className="bf-modal" role="dialog" aria-modal="true">
-          <div className="bf-modal-top">
-            <button className="bf-modal-close" onClick={() => setActivePerson(null)}>&#10005;</button>
-            {activePerson && (
-              <div className="bf-avatar" style={{ background: colorFor(activePerson) }}>
-                {initials(activePerson)}
-              </div>
-            )}
-          </div>
-          <div className="bf-modal-body">
-            <h3>{activePerson}</h3>
-            <div className="bf-badges">
-              {activeData?.roles.map((r) => (
-                <span className="bf-badge" key={r}>{r}</span>
-              ))}
-            </div>
-            <p className="bio">{activeData?.bio}</p>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -261,21 +283,28 @@ const CSS = `
 .bf-person-btn:hover .arrow{opacity:1;}
 .bf-main{display:flex;flex-direction:column;gap:22px;min-width:0;}
 .bf-bar{background:linear-gradient(90deg,var(--red),#d85a5a);color:#fff;text-align:center;font-weight:800;letter-spacing:0.05em;padding:10px 14px;border-radius:10px;font-size:0.95em;text-transform:uppercase;box-shadow:0 6px 16px rgba(194,59,59,0.35);}
+/* Connector: a horizontal spine plus a vertical drop centered over each
+   column. Uses the SAME column count as the row it feeds, so the drops
+   line up exactly. */
+.bf-connector{position:relative;height:20px;margin-top:8px;}
+.bf-connector::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--ink-soft);opacity:.5;}
+.bf-connector-row{display:grid;height:100%;}
+.bf-connector-row span{display:block;width:2px;height:100%;background:var(--ink-soft);opacity:.5;justify-self:center;}
+.bf-connector.for-board .bf-connector-row{grid-template-columns:repeat(3,1fr);}
+.bf-connector.for-admin .bf-connector-row{grid-template-columns:repeat(7,1fr);}
 .bf-board-wrap{position:relative;}
-.bf-board-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:16px;}
+.bf-board-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
 .bf-board-card{background:linear-gradient(160deg,var(--navy),var(--navy-2));color:#fff;border-radius:12px;padding:18px 14px;text-align:center;box-shadow:var(--shadow);border:none;width:100%;position:relative;transition:transform .15s ease,box-shadow .15s ease;}
-.bf-board-card::before{content:"";position:absolute;top:-16px;left:50%;transform:translateX(-50%);width:2px;height:16px;background:var(--ink-soft);opacity:.45;}
 .bf-board-card .role{font-family:'Plus Jakarta Sans','Inter var',Inter,sans-serif;font-size:1.08em;font-weight:700;margin-bottom:6px;}
 .bf-board-card .name{color:#9fc1ff;font-size:0.95em;font-weight:600;}
 .bf-board-card:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(19,34,87,0.28);}
-.bf-admin-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:16px;}
+.bf-admin-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;}
 .bf-dept{display:flex;flex-direction:column;gap:8px;position:relative;}
-.bf-dept::before{content:"";position:absolute;top:-16px;left:50%;transform:translateX(-50%);width:2px;height:16px;background:var(--ink-soft);opacity:.45;}
 .bf-dept-head{background:linear-gradient(160deg,var(--blue),var(--blue-dark));color:#fff;border:none;border-radius:10px;padding:14px 10px;text-align:center;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:4px;transition:transform .15s ease,box-shadow .15s ease;width:100%;}
 .bf-dept-head:hover{transform:translateY(-2px);box-shadow:0 14px 26px rgba(19,34,87,0.3);}
 .bf-dept-head .title{font-weight:800;font-size:0.86em;text-transform:uppercase;letter-spacing:0.02em;}
 .bf-dept-head .name{font-size:0.86em;font-weight:600;color:#cfe0ff;}
-.bf-subs{display:flex;flex-direction:column;gap:6px;min-height:152px;justify-content:flex-start;}
+.bf-subs{display:flex;flex-direction:column;gap:6px;justify-content:flex-start;}
 .bf-sub{background:var(--navy);color:#dbe6ff;border-radius:8px;padding:10px 8px;text-align:center;font-size:0.78em;font-weight:600;line-height:1.25;box-shadow:0 3px 8px rgba(19,34,87,0.18);}
 .bf-org[data-theme="dark"] .bf-sub{background:#0f1738;}
 .bf-bracket{height:34px;position:relative;margin-top:4px;color:var(--ink-soft);}
@@ -284,28 +313,41 @@ const CSS = `
 .bf-banner h2{font-family:'Plus Jakarta Sans','Inter var',Inter,sans-serif;margin:0 0 8px;font-size:1.3em;font-weight:800;letter-spacing:0.02em;}
 .bf-banner p{margin:0;color:#bcd0ff;font-style:italic;font-size:0.95em;}
 .bf-footer{background:var(--navy);color:#93a9df;text-align:center;font-size:0.78em;padding:12px;letter-spacing:0.02em;}
-.bf-modal-overlay{position:fixed;inset:0;background:rgba(9,13,32,0.6);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:999;padding:16px;opacity:0;pointer-events:none;transition:opacity .18s ease;}
-.bf-modal-overlay.open{opacity:1;pointer-events:auto;}
-.bf-modal{background:var(--card);color:var(--ink);border-radius:18px;max-width:440px;width:100%;box-shadow:0 30px 70px rgba(0,0,0,0.45);overflow:hidden;transform:translateY(14px);transition:transform .18s ease;}
-.bf-modal-overlay.open .bf-modal{transform:translateY(0);}
-.bf-modal-top{background:linear-gradient(135deg,var(--navy),var(--navy-2));padding:26px 22px 44px;position:relative;}
-.bf-modal-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:999px;border:none;background:rgba(255,255,255,0.15);color:#fff;font-size:1em;display:flex;align-items:center;justify-content:center;}
-.bf-modal-close:hover{background:rgba(255,255,255,0.3);}
-.bf-avatar{width:82px;height:82px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans','Inter var',Inter,sans-serif;font-weight:700;font-size:1.6em;color:#fff;border:4px solid #fff;position:absolute;bottom:-41px;left:22px;box-shadow:0 6px 16px rgba(0,0,0,0.3);}
-.bf-modal-body{padding:52px 22px 26px;}
-.bf-modal-body h3{font-family:'Plus Jakarta Sans','Inter var',Inter,sans-serif;font-size:1.3em;margin:0 0 8px;}
-.bf-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
-.bf-badge{background:var(--blue-pale);color:var(--blue-dark);font-size:0.74em;font-weight:700;padding:4px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:0.03em;}
-.bf-org[data-theme="dark"] .bf-badge{color:#9fc1ff;}
-.bf-modal-body p.bio{margin:0;font-size:0.95em;line-height:1.55;color:var(--ink-soft);}
-@media (max-width:1180px){ .bf-admin-grid{grid-template-columns:repeat(4,1fr);} .bf-dept::before{display:none;} }
+/* Full-page profile — replaces the chart view in place, not a popup */
+.bf-profile{animation:bfFadeIn .2s ease;}
+@keyframes bfFadeIn{ from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
+.bf-profile-back{border:none;background:var(--blue-pale);color:var(--blue-dark);font-weight:700;font-size:0.9em;padding:9px 16px;border-radius:999px;margin-bottom:22px;display:inline-flex;align-items:center;gap:6px;}
+.bf-org[data-theme="dark"] .bf-profile-back{color:#9fc1ff;}
+.bf-profile-back:hover{background:rgba(47,90,168,0.18);}
+.bf-profile-hero{display:flex;align-items:center;gap:28px;background:linear-gradient(135deg,var(--navy),var(--navy-2));border-radius:18px;padding:36px 32px;box-shadow:var(--shadow);color:#fff;margin-bottom:28px;}
+.bf-profile-photo{width:132px;height:132px;flex:none;border-radius:999px;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans','Inter var',Inter,sans-serif;font-weight:700;font-size:2.6em;color:#fff;border:5px solid rgba(255,255,255,0.35);box-shadow:0 10px 28px rgba(0,0,0,0.35);}
+.bf-profile-heading h2{font-family:'Plus Jakarta Sans','Inter var',Inter,sans-serif;font-size:2em;margin:0 0 12px;font-weight:800;}
+.bf-profile-body{display:grid;grid-template-columns:1.6fr 1fr;gap:22px;align-items:start;}
+.bf-profile-section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;box-shadow:var(--shadow);}
+.bf-profile-section h4{margin:0 0 14px;font-size:0.78em;text-transform:uppercase;letter-spacing:0.06em;font-weight:800;color:var(--blue-dark);}
+.bf-org[data-theme="dark"] .bf-profile-section h4{color:#9fc1ff;}
+.bf-profile-section p.bio{margin:0;font-size:1.02em;line-height:1.7;color:var(--ink);}
+.bf-profile-focus{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+.bf-profile-focus li{background:var(--blue-pale);color:var(--blue-dark);font-size:0.85em;font-weight:700;padding:9px 12px;border-radius:10px;}
+.bf-org[data-theme="dark"] .bf-profile-focus li{color:#9fc1ff;}
+.bf-badges{display:flex;flex-wrap:wrap;gap:6px;}
+.bf-badge{background:rgba(255,255,255,0.16);color:#fff;font-size:0.76em;font-weight:700;padding:5px 12px;border-radius:999px;text-transform:uppercase;letter-spacing:0.03em;}
+@media (max-width:1180px){
+  .bf-admin-grid{grid-template-columns:repeat(4,1fr);}
+  /* Below this width the 7 departments wrap to two rows, so a single
+     straight connector no longer maps to real column positions. */
+  .bf-connector.for-admin{display:none;}
+}
 @media (max-width:980px){ .bf-grid{grid-template-columns:1fr;} .bf-side{order:2;} .bf-main{order:1;} }
 @media (max-width:768px){
-  .bf-board-grid{grid-template-columns:1fr;} .bf-board-card::before{display:none;}
+  .bf-board-grid{grid-template-columns:1fr;}
   .bf-admin-grid{grid-template-columns:1fr;gap:16px;}
+  .bf-connector{display:none;}
   .bf-dept{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;box-shadow:var(--shadow);}
-  .bf-dept-head{box-shadow:none;} .bf-subs{min-height:0;}
+  .bf-dept-head{box-shadow:none;}
   .bf-header{flex-direction:column;text-align:center;padding:22px 18px;}
   .bf-title h1{font-size:1.35em;} .bf-body{padding:18px 14px;} .bf-toolbar{justify-content:center;}
+  .bf-profile-hero{flex-direction:column;text-align:center;padding:28px 20px;}
+  .bf-profile-body{grid-template-columns:1fr;}
 }
 `;
