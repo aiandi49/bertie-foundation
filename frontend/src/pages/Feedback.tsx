@@ -3,7 +3,7 @@ import { Layout } from "../components/Layout";
 import { FeedbackForm } from "../components/FeedbackForm";
 import { motion } from "framer-motion";
 import { trackEvent, ANALYTICS_EVENTS } from "../utils/analytics";
-import { supabase } from "../utils/supabaseClient";
+import { postToBackend } from "../utils/backendApi";
 
 export default function Feedback() {
   const [loading, setLoading] = useState(false);
@@ -108,18 +108,13 @@ export default function Feedback() {
                       setError("");
                       
                       try {
-                        // Submit directly to Supabase
-                        const { error: dbError } = await supabase.from('feedback').insert({
+                        await postToBackend("/submit-feedback", {
                           rating: feedback.rating,
                           comment: feedback.comment,
                           category: feedback.category,
                           email: feedback.email || null,
-                          created_at: new Date().toISOString(),
-                          status: 'pending',
                         });
-                        
-                        if (dbError) throw dbError;
-                        
+
                         // Track successful submission
                         await trackEvent({
                           event_type: ANALYTICS_EVENTS.FEEDBACK.SUBMIT_SUCCESS,
