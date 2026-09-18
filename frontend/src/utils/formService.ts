@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { postToBackend } from './backendApi';
 
 export interface NewsletterSubscription {
   email: string;
@@ -113,17 +114,18 @@ export const formService = {
   },
 
   async submitVolunteer(data: Omit<VolunteerApplication, 'submittedAt' | 'status'>) {
-    const { error } = await supabase.from('volunteer_applications').insert({
+    // Routed through Supabase Edge Functions (see supabase/functions/submit-volunteer).
+    // Note: `phone` isn't a column in volunteer_applications (see
+    // supabase_setup_v2.sql), so it isn't sent — it was silently dropped by
+    // the old direct-insert path too.
+    await postToBackend('/submit-volunteer', {
       name: data.name,
       email: data.email,
       message: data.message,
       interests: data.interests,
       skills: data.skills,
       availability: data.availability,
-      submitted_at: new Date().toISOString(),
-      status: 'pending',
     });
-    if (error) throw error;
   },
 
   async getVolunteerApplications(): Promise<VolunteerApplication[]> {
