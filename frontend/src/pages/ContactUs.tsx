@@ -3,7 +3,7 @@ import { Layout } from "../components/Layout";
 import { Mail, Phone, MapPin, Clock, Facebook, Twitter, Instagram, Linkedin, Youtube, Globe, X } from "lucide-react";
 import { Button } from "../components/Button";
 import { useState } from "react";
-import { supabase } from "../utils/supabaseClient";
+import { postToBackend } from "../utils/backendApi";
 
 export default function ContactUs() {
   const [loading, setLoading] = useState(false);
@@ -30,18 +30,13 @@ export default function ContactUs() {
     setError("");
     
     try {
-      const { error: dbError } = await supabase
-        .from("contact_requests")
-        .insert({
-          name: formData.name,
-          email: formData.email,
-          subject: formData.subject,
-          message: formData.message,
-          category: formData.category || "general",
-          status: "received",
-        });
-
-      if (dbError) throw dbError;
+      await postToBackend("/submit-contact", {
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+        category: formData.category || "general",
+      });
 
       setSuccess(true);
       setFormData({ name: "", email: "", subject: "", message: "", category: "" });
