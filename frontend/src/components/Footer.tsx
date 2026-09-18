@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "../utils/supabaseClient";
+import { postToBackend } from "../utils/backendApi";
 import { Globe, Instagram, Linkedin, Mail, X, Youtube, CheckCircle, ArrowRight, User, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "components/Button";
@@ -26,21 +26,17 @@ export function Footer() {
     setIsLoading(true);
 
     try {
-      // Insert directly and rely on the email UNIQUE constraint to catch
-      // duplicates (Postgres error code 23505). This avoids needing a public
-      // SELECT policy on newsletter_subscribers, which would otherwise let
-      // anyone query the full subscriber list via the anon key.
-      const { error: dbError } = await supabase
-        .from("newsletter_subscribers")
-        .insert({ name, email: email.toLowerCase(), source: "footer", status: "active" });
+      // The backend checks for an existing email before inserting and
+      // returns a distinct message for that case, so we branch on the
+      // response text instead of a Postgres duplicate-key error code.
+      const data = await postToBackend<{ status: string; message: string }>(
+        "/subscribe-to-newsletter",
+        { name, email: email.toLowerCase(), source: "footer" }
+      );
 
-      if (dbError) {
-        if (dbError.code === "23505") {
-          setSuccess("You are already subscribed. Please check your inbox for confirmation.");
-          setShowSuccessModal(false);
-        } else {
-          throw dbError;
-        }
+      if (data.message?.toLowerCase().includes("already subscribed")) {
+        setSuccess(data.message);
+        setShowSuccessModal(false);
       } else {
         setSuccess("Successfully Subscribed!");
         setShowSuccessModal(true);
