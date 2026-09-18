@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/Layout';
-import { Mail, Users, MessageSquare, Award, Star, Trash2, RefreshCw, CheckCircle, XCircle, Download, FileSpreadsheet } from 'lucide-react';
+import { Mail, Users, MessageSquare, Award, Star, Trash2, RefreshCw, CheckCircle, XCircle, Download, FileSpreadsheet, Network } from 'lucide-react';
 import { Button } from '../components/Button';
 import { supabase } from '../utils/supabaseClient';
 import { useAuth, logAdminActivity } from '../utils/useAuth';
+import OrgChartTab from '../components/OrgChartTab';
 import * as XLSX from 'xlsx';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type TabKey = 'newsletter' | 'contact' | 'volunteer' | 'stories' | 'feedback';
+type TabKey = 'newsletter' | 'contact' | 'volunteer' | 'stories' | 'feedback' | 'orgchart';
 
 interface Subscriber { id: string; name: string; email: string; status: string; source: string; subscribed_at: string; }
-interface ContactReq  { id: string; name: string; email: string; subject: string; message: string; submitted_at: string; status: string; }
+interface ContactReq  { id: string; name: string; email: string; subject: string; message: string; category?: string; submitted_at: string; status: string; }
 interface Volunteer   { id: string; name: string; email: string; message: string; interests: any; skills: any; submitted_at: string; status: string; }
 interface Story       { id: string; name: string; email: string; title: string; story: string; program: string; impact: string; image_url: string; timestamp: string; status: string; }
 interface Feedback    { id: string; name?: string; email?: string; rating: number; category: string; comment: string; created_at: string; status: string; }
@@ -212,6 +213,11 @@ function ContactTab({ userEmail }: { userEmail: string }) {
                 </div>
               </div>
               {r.subject && <p className="text-sm font-medium text-blue-400 mb-1">{r.subject}</p>}
+              {r.category && (
+                <span className="inline-block text-xs font-medium text-purple-300 bg-purple-900/40 border border-purple-700/50 rounded-full px-2 py-0.5 mb-2">
+                  {r.category}
+                </span>
+              )}
               <p className="text-gray-300 text-sm whitespace-pre-wrap">{r.message}</p>
             </div>
           ))}
@@ -498,6 +504,7 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   { key: 'volunteer',  label: 'Volunteers',       icon: <Users className="w-4 h-4" /> },
   { key: 'stories',    label: 'Success Stories',  icon: <Award className="w-4 h-4" /> },
   { key: 'feedback',   label: 'Feedback',         icon: <Star className="w-4 h-4" /> },
+  { key: 'orgchart',   label: 'Org Chart',        icon: <Network className="w-4 h-4" /> },
 ];
 
 function AdminDashboard({ userEmail }: { userEmail: string }) {
@@ -554,13 +561,19 @@ function AdminDashboard({ userEmail }: { userEmail: string }) {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-gray-900/50 rounded-2xl p-6 border border-gray-800">
-          {tab === 'newsletter' && <NewsletterTab userEmail={userEmail} />}
-          {tab === 'contact'    && <ContactTab    userEmail={userEmail} />}
-          {tab === 'volunteer'  && <VolunteerTab  userEmail={userEmail} />}
-          {tab === 'stories'    && <StoriesTab    userEmail={userEmail} />}
-          {tab === 'feedback'   && <FeedbackTab   userEmail={userEmail} />}
-        </div>
+        {tab === 'orgchart' ? (
+          // Org Chart brings its own full-width card + light background, so it
+          // skips the dark padded frame the data tabs below use.
+          <OrgChartTab />
+        ) : (
+          <div className="bg-gray-900/50 rounded-2xl p-6 border border-gray-800">
+            {tab === 'newsletter' && <NewsletterTab userEmail={userEmail} />}
+            {tab === 'contact'    && <ContactTab    userEmail={userEmail} />}
+            {tab === 'volunteer'  && <VolunteerTab  userEmail={userEmail} />}
+            {tab === 'stories'    && <StoriesTab    userEmail={userEmail} />}
+            {tab === 'feedback'   && <FeedbackTab   userEmail={userEmail} />}
+          </div>
+        )}
       </div>
     </Layout>
   );
