@@ -79,7 +79,9 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const isAdmin = user ? ADMIN_EMAILS.includes(user.email || '') : false;
+  const isAdmin = user
+    ? ADMIN_EMAILS.some(e => e.toLowerCase() === (user.email || '').trim().toLowerCase())
+    : false;
 
   return { user, isAdmin, loading };
 }

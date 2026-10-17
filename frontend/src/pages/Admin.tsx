@@ -581,50 +581,134 @@ function AdminDashboard({ userEmail }: { userEmail: string }) {
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 
+const inputClass = "w-full px-3 py-2 mt-1 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring focus:ring-blue-500 focus:ring-opacity-50";
+
+function AuthCard({ subtitle, children }: { subtitle: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-900 px-4">
+      <div className="w-full max-w-md p-8 bg-gray-800 rounded-xl shadow-2xl">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white">Bertie Foundation</h1>
+          <p className="text-gray-400 mt-2">{subtitle}</p>
+        </div>
+        {children}
+        <p className="text-center mt-6">
+          <a href="/" className="text-sm text-gray-400 hover:text-white underline underline-offset-4">Back to the website</a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<'signin' | 'reset'>('signin');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setError('Invalid email or password. Please try again.');
+    setNotice(null);
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) setError('Invalid email or password. Please try again, or use "Forgot password?" below.');
     setLoading(false);
   };
 
+  const handleReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setNotice(null);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/admin`,
+    });
+    setLoading(false);
+    if (error) setError('We could not send the reset email just now. Please wait a few minutes and try again.');
+    else setNotice('If that email has admin access, a reset link is on its way. Open it on this device to choose a new password.');
+  };
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900">
-      <div className="w-full max-w-md p-8 bg-gray-800 rounded-xl shadow-2xl">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Bertie Foundation</h1>
-          <p className="text-gray-400 mt-2">Admin Access</p>
+    <AuthCard subtitle={mode === 'signin' ? 'Admin Access' : 'Reset your password'}>
+      <form onSubmit={mode === 'signin' ? handleLogin : handleReset} className="space-y-6">
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-300">Email</label>
+          <input id="email" type="email" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} required className={inputClass} />
         </div>
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300">Email</label>
-            <input
-              id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required
-              className="w-full px-3 py-2 mt-1 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-            />
-          </div>
+        {mode === 'signin' && (
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-300">Password</label>
-            <input
-              id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required
-              className="w-full px-3 py-2 mt-1 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-            />
+            <input id="password" type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required className={inputClass} />
           </div>
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          <Button type="submit" fullWidth disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
-          </Button>
-        </form>
+        )}
+        {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
+        {notice && <p className="text-sm text-green-400" role="status">{notice}</p>}
+        <Button type="submit" fullWidth disabled={loading}>
+          {mode === 'signin' ? (loading ? 'Signing in...' : 'Sign In') : (loading ? 'Sending...' : 'Send reset link')}
+        </Button>
+      </form>
+      <p className="text-center mt-4">
+        <button
+          type="button"
+          onClick={() => { setMode(mode === 'signin' ? 'reset' : 'signin'); setError(null); setNotice(null); }}
+          className="text-sm text-blue-400 hover:text-blue-300 underline underline-offset-4"
+        >
+          {mode === 'signin' ? 'Forgot password?' : 'Back to sign in'}
+        </button>
+      </p>
+    </AuthCard>
+  );
+}
+
+function SetNewPassword({ onDone }: { onDone: () => void }) {
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (password.length < 10) { setError('Use at least 10 characters.'); return; }
+    if (password !== confirm) { setError('The two passwords do not match.'); return; }
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+    if (error) setError('We could not save the new password. Request a new reset link and try again.');
+    else onDone();
+  };
+
+  return (
+    <AuthCard subtitle="Choose a new password">
+      <form onSubmit={handleSave} className="space-y-6">
+        <div>
+          <label htmlFor="new-password" className="block text-sm font-medium text-gray-300">New password</label>
+          <input id="new-password" type="password" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} required className={inputClass} />
+        </div>
+        <div>
+          <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300">Type it again</label>
+          <input id="confirm-password" type="password" autoComplete="new-password" value={confirm} onChange={e => setConfirm(e.target.value)} required className={inputClass} />
+        </div>
+        {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
+        <Button type="submit" fullWidth disabled={loading}>{loading ? 'Saving...' : 'Save new password'}</Button>
+      </form>
+    </AuthCard>
+  );
+}
+
+function NotAdmin({ email }: { email: string }) {
+  return (
+    <AuthCard subtitle="Admin Access">
+      <p className="text-gray-300 text-center">
+        You are signed in as <span className="text-white font-semibold break-all">{email}</span>, but this account does not have admin access.
+      </p>
+      <div className="mt-6">
+        <Button fullWidth onClick={() => supabase.auth.signOut()}>Sign out and try another account</Button>
       </div>
-    </div>
+    </AuthCard>
   );
 }
 
@@ -632,6 +716,17 @@ function Login() {
 
 export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
+  // A password-reset link signs the person in with a recovery session; ask for a new password first.
+  const [recovering, setRecovering] = useState(
+    () => typeof window !== 'undefined' && /type=recovery/.test(window.location.hash)
+  );
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string) => {
+      if (event === 'PASSWORD_RECOVERY') setRecovering(true);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   if (loading) {
     return (
@@ -641,6 +736,8 @@ export default function Admin() {
     );
   }
 
+  if (recovering && user) return <SetNewPassword onDone={() => setRecovering(false)} />;
   if (user && isAdmin) return <AdminDashboard userEmail={user.email || ''} />;
+  if (user) return <NotAdmin email={user.email || ''} />;
   return <Login />;
 }
