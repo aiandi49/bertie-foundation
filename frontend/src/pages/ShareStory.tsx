@@ -72,6 +72,9 @@ export default function ShareStory() {
                         email: story.email,
                         image_url: null, // image upload requires storage bucket setup
                         tags: story.tags,
+                        social_links: story.socialLinks.trim() || null,
+                        social_consent: story.socialConsent,
+                        social_consent_at: new Date().toISOString(),
                         status: "pending",
                         timestamp: new Date().toISOString(),
                       });

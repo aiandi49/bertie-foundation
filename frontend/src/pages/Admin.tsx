@@ -14,7 +14,7 @@ type TabKey = 'newsletter' | 'contact' | 'volunteer' | 'stories' | 'feedback' | 
 interface Subscriber { id: string; name: string; email: string; status: string; source: string; subscribed_at: string; }
 interface ContactReq  { id: string; name: string; email: string; subject: string; message: string; category?: string; submitted_at: string; status: string; }
 interface Volunteer   { id: string; name: string; email: string; message: string; interests: any; skills: any; submitted_at: string; status: string; }
-interface Story       { id: string; name: string; email: string; title: string; story: string; program: string; impact: string; image_url: string; timestamp: string; status: string; }
+interface Story       { id: string; name: string; email: string; title: string; story: string; program: string; impact: string; image_url: string; timestamp: string; status: string; social_links?: string | null; social_consent?: boolean | null; social_consent_at?: string | null; }
 interface Feedback    { id: string; name?: string; email?: string; rating: number; category: string; comment: string; created_at: string; status: string; }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -359,6 +359,8 @@ function StoriesTab({ userEmail }: { userEmail: string }) {
               <div className="grid grid-cols-2 gap-2 mb-2 text-xs text-gray-400">
                 <span><span className="text-gray-300">Program:</span> {r.program}</span>
                 <span><span className="text-gray-300">Impact:</span> {r.impact}</span>
+                <span><span className="text-gray-300">Social media sharing:</span> {r.social_consent === true ? 'Yes, consented' : r.social_consent === false ? 'No' : 'Not asked'}</span>
+                {r.social_links && <span className="break-all"><span className="text-gray-300">Social links:</span> {r.social_links}</span>}
               </div>
               <p className="text-gray-300 text-sm whitespace-pre-wrap mb-3">{r.story}</p>
               {r.image_url && <img src={r.image_url} alt="story" className="h-24 rounded-lg object-cover mb-3" />}

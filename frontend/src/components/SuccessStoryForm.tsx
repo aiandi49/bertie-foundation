@@ -35,6 +35,8 @@ interface Props {
     email: string;
     image?: File;
     tags: string[];
+    socialLinks: string;
+    socialConsent: boolean;
   }) => void;
   loading?: boolean;
   error?: string;
@@ -59,8 +61,11 @@ export function SuccessStoryForm({ onSubmit, loading = false, error = "" }: Prop
     impact: "",
     name: "",
     email: "",
-    tags: []
+    tags: [],
+    socialLinks: ""
   });
+  // "" until the person chooses; the question is required.
+  const [socialConsent, setSocialConsent] = useState<"" | "yes" | "no">("");
   const [image, setImage] = useState<File | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [toast, setToast] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'info' }>({
@@ -114,6 +119,11 @@ export function SuccessStoryForm({ onSubmit, loading = false, error = "" }: Prop
       return;
     }
 
+    if (!socialConsent) {
+      showToast("Please answer the question about sharing your story on social media", "error");
+      return;
+    }
+
     await handleEvent("submit", { program: formData.program });
     // Only show preview - don't submit the form yet
     setIsPreviewOpen(true);
@@ -133,8 +143,13 @@ export function SuccessStoryForm({ onSubmit, loading = false, error = "" }: Prop
       return false;
     }
     
+    if (!socialConsent) {
+      showToast("Please answer the question about sharing your story on social media", "error");
+      return false;
+    }
+
     // Only now do we actually submit the form data
-    await onSubmit({ ...formData, image: image || undefined });
+    await onSubmit({ ...formData, image: image || undefined, socialConsent: socialConsent === "yes" });
     return true;
   };
 
@@ -395,6 +410,52 @@ export function SuccessStoryForm({ onSubmit, loading = false, error = "" }: Prop
               />
               <p className="text-xs text-gray-400 mt-1">Tags help others discover your story</p>
             </div>
+
+            <div className="space-y-1">
+              <label className="block text-white font-medium" htmlFor="socialLinks">
+                Your Social Media Links <span className="text-sm text-gray-400 ml-2">(Optional)</span>
+              </label>
+              <textarea
+                id="socialLinks"
+                name="socialLinks"
+                value={formData.socialLinks}
+                onChange={handleChange}
+                maxLength={600}
+                rows={2}
+                placeholder="Instagram, Facebook or other links"
+                className="w-full px-4 py-3 rounded-xl bg-secondary-700/70 text-white border border-secondary-600
+                         focus:border-primary-500 focus:ring-2 focus:ring-primary-500/40 focus:outline-none
+                         transition-colors duration-200 backdrop-blur-sm"
+              />
+              <p className="text-xs text-gray-400 mt-1">So we can tag you if we share your story</p>
+            </div>
+
+            <fieldset className="space-y-2">
+              <legend className="block text-white font-medium">
+                Do you consent to the Bertie Foundation sharing your story on its social media pages? <span className="text-primary-400">*</span>
+              </legend>
+              <div className="flex flex-wrap gap-3">
+                {(["yes", "no"] as const).map(choice => (
+                  <label
+                    key={choice}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border cursor-pointer transition-colors ${
+                      socialConsent === choice ? "border-primary-500 bg-primary-500/15 text-white" : "border-secondary-600 bg-secondary-700/70 text-gray-200"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="socialConsent"
+                      value={choice}
+                      checked={socialConsent === choice}
+                      onChange={() => { setSocialConsent(choice); handleEvent("social_consent", { choice }); }}
+                      className="accent-red-500"
+                      required
+                    />
+                    {choice === "yes" ? "Yes, you may share it" : "No, keep it on the website only"}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
 
             <div className="space-y-1">
               <label className="block text-white font-medium" htmlFor="image">
