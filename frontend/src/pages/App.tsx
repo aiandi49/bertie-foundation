@@ -5,6 +5,7 @@ import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 
 // Components
 import { Navigation } from "components/Navigation";
+import { PartnerTicker } from "components/PartnerTicker";
 import { Footer } from "components/Footer";
 import { OptimizedImage } from "components/OptimizedImage";
 
@@ -120,6 +121,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-secondary-950 overflow-x-hidden">
       <Navigation />
+      <PartnerTicker />
       
       {/* Hero Section */}
       <section className="relative bg-white py-1 sm:py-3 md:py-6 lg:py-14 px-1 sm:px-3 md:px-6 lg:px-8 overflow-hidden">

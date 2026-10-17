@@ -1,0 +1,34 @@
+/* Partner ticker on the home page, under the navigation bar. Its own fixed palette (deep Bertie red),
+   so it reads the same on every page theme. Sizes in rem. */
+.bf-ticker{position:relative; z-index:2; display:flex; align-items:stretch; width:100%; min-height:2.5rem;
+  background:#7a1620; background-image:linear-gradient(90deg, #5c0f17 0%, #9e1a23 45%, #b3121f 100%); color:#ffffff;
+  border-top:1px solid rgba(255,255,255,.12); border-bottom:1px solid rgba(0,0,0,.35); font-family:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;}
+.bf-ticker-label{flex:0 0 auto; display:inline-flex; align-items:center; gap:.4375rem; padding:0 .875rem 0 calc(.75rem + env(safe-area-inset-left, 0px)); background:#3d080e; font-size:.8125rem; font-weight:700; white-space:nowrap; box-shadow:.5rem 0 .75rem -.25rem rgba(0,0,0,.45); position:relative; z-index:1;}
+.bf-ticker-label img{width:1.25rem; height:1.25rem; border-radius:.3125rem; background:#fff; display:block;}
+.bf-ticker-viewport{flex:1 1 auto; min-width:0; overflow:hidden; display:flex; align-items:center;
+  -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 1.5rem, #000 calc(100% - 1.5rem), transparent 100%); mask-image:linear-gradient(90deg, transparent 0, #000 1.5rem, #000 calc(100% - 1.5rem), transparent 100%);}
+.bf-ticker-track{display:flex; align-items:center; list-style:none; margin:0; padding:0; width:max-content; animation:bf-tk-scroll 120s linear infinite;}
+@keyframes bf-tk-scroll{from{transform:translateX(0);} to{transform:translateX(-50%);}}
+.bf-ticker:hover .bf-ticker-track,.bf-ticker.is-paused .bf-ticker-track{animation-play-state:paused;}
+.bf-tk-item{display:flex; align-items:center; white-space:nowrap;}
+.bf-tk-link{display:inline-flex; align-items:baseline; gap:.5rem; padding:.5rem .25rem; color:#ffffff; text-decoration:none; font-size:.875rem;}
+.bf-tk-link:hover .bf-tk-name{text-decoration:underline; text-underline-offset:.2em;}
+.bf-tk-link:focus-visible{outline:.125rem solid #ffffff; outline-offset:.125rem; border-radius:.25rem;}
+.bf-tk-name{font-weight:600;}
+.bf-tk-count{font-weight:700; color:#ffe1e4; font-variant-numeric:tabular-nums;}
+.bf-tk-up{font-size:.6875rem;}
+.bf-tk-date{color:#ffd0d5; font-size:.8125rem;}
+.bf-tk-sep{padding:0 .875rem; color:#ff9aa3; font-size:.75rem;}
+.bf-ticker-toggle{flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; width:2.75rem; min-height:2.5rem; padding:0 calc(.25rem + env(safe-area-inset-right, 0px)) 0 0; border:0; border-left:1px solid rgba(255,255,255,.18); background:#3d080e; color:#ffffff; cursor:pointer;}
+.bf-ticker-toggle svg{width:.875rem; height:.875rem;}
+.bf-ticker-toggle:focus-visible{outline:.125rem solid #ffffff; outline-offset:-.25rem;}
+/* Keyboard users and reduced-motion visitors get a still strip they can scroll by hand. */
+.bf-ticker:focus-within .bf-ticker-track{animation:none;}
+.bf-ticker:focus-within .bf-ticker-viewport{overflow-x:auto; -webkit-mask-image:none; mask-image:none;}
+@media (prefers-reduced-motion:reduce){
+  .bf-ticker-track{animation:none;}
+  .bf-ticker-viewport{overflow-x:auto; -webkit-mask-image:none; mask-image:none; scrollbar-width:thin;}
+  .bf-tk-item[aria-hidden="true"]{display:none;}
+  .bf-ticker-toggle{display:none;}
+}
+@media (max-width:30em){ .bf-ticker-label .bf-tk-label-text{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;} .bf-ticker-label{padding-right:.625rem;} }
