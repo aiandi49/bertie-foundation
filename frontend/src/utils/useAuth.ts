@@ -34,6 +34,8 @@ export async function logAdminActivity({
   details?: string;
   user_email: string;
 }) {
+  // A 'delete' row also emails the admins: the database trigger trg_notify_admin_delete
+  // sends it through the notify-admin function, so the browser never needs a secret.
   await supabase.from('admin_activity_log').insert({
     action,
     table_name,
@@ -42,20 +44,6 @@ export async function logAdminActivity({
     performed_by: user_email,
     performed_at: new Date().toISOString(),
   });
-
-  // For destructive actions, also trigger the email alert Edge Function
-  if (action === 'delete') {
-    await supabase.functions.invoke('send-admin-alert', {
-      body: {
-        action,
-        table_name,
-        record_id,
-        details,
-        performed_by: user_email,
-        alert_recipients: ALERT_RECIPIENTS,
-      },
-    });
-  }
 }
 
 // ─── useAuth Hook ─────────────────────────────────────────────────────────────

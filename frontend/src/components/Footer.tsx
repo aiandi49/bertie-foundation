@@ -179,39 +179,40 @@ export function Footer() {
 
           {/* Contact Info */}
           <motion.div
+            className="min-w-0"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             viewport={{ once: true }}
           >
             <h3 className="text-base sm:text-lg md:text-2xl font-display font-bold text-white mb-2 sm:mb-3 md:mb-4 text-center sm:text-left">Contact Us</h3>
-            <div className="space-y-1 sm:space-y-2 md:space-y-4 flex flex-col items-center sm:items-start">
+            <div className="space-y-1 sm:space-y-2 md:space-y-4 flex flex-col items-center sm:items-start min-w-0">
                <motion.a 
                 href="tel:+66973432151"
-                className="flex items-center space-x-2 sm:space-x-3 text-white hover:text-white/80
+                className="flex items-center max-w-full min-w-0 space-x-2 sm:space-x-3 text-white hover:text-white/80
                          transition-all duration-300 group text-xs sm:text-sm md:text-base"
                 whileHover={{ x: 4 }}
               >
-                <Phone size={18} className="text-blue-400 group-hover:scale-110 transition-transform duration-300" />
-                <span className="text-xs sm:text-sm md:text-base">+66 97 343 2151</span>
+                <Phone size={18} className="shrink-0 text-blue-400 group-hover:scale-110 transition-transform duration-300" />
+                <span className="text-xs sm:text-sm md:text-base min-w-0 [overflow-wrap:anywhere]">+66 97 343 2151</span>
               </motion.a>
               <motion.a 
                 href="mailto:info@bertiefoundation.org"
-                className="flex items-center space-x-2 sm:space-x-3 text-white hover:text-white/80
+                className="flex items-center max-w-full min-w-0 space-x-2 sm:space-x-3 text-white hover:text-white/80
                          transition-all duration-300 group text-xs sm:text-sm md:text-base"
                 whileHover={{ x: 4 }}
               >
-                <Mail size={18} className="text-blue-400 group-hover:scale-110 transition-transform duration-300" />
-                <span className="text-xs sm:text-sm md:text-base">info@bertiefoundation.org</span>
+                <Mail size={18} className="shrink-0 text-blue-400 group-hover:scale-110 transition-transform duration-300" />
+                <span className="text-xs sm:text-sm md:text-base min-w-0 [overflow-wrap:anywhere]">info@bertiefoundation.org</span>
               </motion.a>
               <motion.a 
                 href="https://www.bertiefoundation.org"
-                className="flex items-center space-x-2 sm:space-x-3 text-white hover:text-white/80
+                className="flex items-center max-w-full min-w-0 space-x-2 sm:space-x-3 text-white hover:text-white/80
                          transition-all duration-300 group text-sm sm:text-base"
                 whileHover={{ x: 4 }}
               >
-                <Globe size={18} className="text-blue-400 group-hover:scale-110 transition-transform duration-300" />
-                <span className="text-xs sm:text-sm md:text-base">www.bertiefoundation.org</span>
+                <Globe size={18} className="shrink-0 text-blue-400 group-hover:scale-110 transition-transform duration-300" />
+                <span className="text-xs sm:text-sm md:text-base min-w-0 [overflow-wrap:anywhere]">www.bertiefoundation.org</span>
               </motion.a>
             </div>
           </motion.div>

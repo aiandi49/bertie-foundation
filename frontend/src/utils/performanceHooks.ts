@@ -29,6 +29,13 @@ export function useOptimizedQuery<T>(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const mountedRef = useRef(true);
+  // Callers usually pass a new inline function (and options object) on every render.
+  // Keep the latest ones in refs so they don't count as a change: otherwise every
+  // render starts a new fetch, which renders again, in an endless request loop.
+  const fetchFnRef = useRef(fetchFn);
+  const optionsRef = useRef(options);
+  fetchFnRef.current = fetchFn;
+  optionsRef.current = options;
 
   const fetchData = useCallback(async (force: boolean = false) => {
     setIsLoading(true);
@@ -40,7 +47,7 @@ export function useOptimizedQuery<T>(
         clearCache(cacheKey);
       }
       
-      const result = await getCachedData<T>(cacheKey, fetchFn, cacheTime);
+      const result = await getCachedData<T>(cacheKey, () => fetchFnRef.current(), cacheTime);
       
       // Only update state if component is still mounted
       if (mountedRef.current) {
@@ -48,9 +55,7 @@ export function useOptimizedQuery<T>(
         setIsLoading(false);
         
         // Call onSuccess callback if provided
-        if (options?.onSuccess) {
-          options.onSuccess(result);
-        }
+        optionsRef.current?.onSuccess?.(result);
       }
     } catch (err) {
       console.error(`Error fetching data for ${cacheKey}:`, err);
@@ -62,16 +67,16 @@ export function useOptimizedQuery<T>(
         setIsLoading(false);
         
         // Call onError callback if provided
-        if (options?.onError) {
-          options.onError(error);
-        }
+        optionsRef.current?.onError?.(error);
       }
     }
-  }, [fetchFn, cacheKey, cacheTime]);
+  }, [cacheKey, cacheTime]);
 
   // Initial fetch and refetch on dependency changes
   useEffect(() => {
+    mountedRef.current = true;
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...dependencies, fetchData]);
 
   // Cleanup on unmount

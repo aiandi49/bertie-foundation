@@ -19,16 +19,22 @@ export default function Impact() {
   useEffect(() => {
     trackEvent("impact_page", "view");
 
-    // Track scroll depth
+    // Track scroll depth: each depth is recorded once per visit to the page.
+    // (Before, every scroll movement re-sent every depth already passed, which
+    // wrote thousands of duplicate rows.)
+    const sent = new Set<number>();
     const handleScroll = () => {
       const scrollDepth = (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100;
-      if (scrollDepth > 25) trackEvent("impact_page", "scroll_depth_25");
-      if (scrollDepth > 50) trackEvent("impact_page", "scroll_depth_50");
-      if (scrollDepth > 75) trackEvent("impact_page", "scroll_depth_75");
-      if (scrollDepth > 90) trackEvent("impact_page", "scroll_depth_90");
+      for (const depth of [25, 50, 75, 90]) {
+        if (scrollDepth > depth && !sent.has(depth)) {
+          sent.add(depth);
+          trackEvent("impact_page", `scroll_depth_${depth}`);
+        }
+      }
+      if (sent.size === 4) window.removeEventListener("scroll", handleScroll);
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 

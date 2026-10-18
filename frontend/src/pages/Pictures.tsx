@@ -84,7 +84,7 @@ export default function Pictures() {
   
   // Use optimized query hook for albums with longer cache time
   const { 
-    data: albums = [], 
+    data: albumData, 
     isLoading: isLoadingAlbums, 
     error: albumsError, 
     refetch: refetchAlbums 
@@ -122,6 +122,9 @@ export default function Pictures() {
     }
   );
   
+  // The query starts as null (and stays null if loading fails), so never read .length on it directly.
+  const albums: Album[] = Array.isArray(albumData) ? albumData : [];
+
   // Use optimized query hook for images with smarter caching
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -81,7 +81,7 @@ export function Navigation() {
             </div>
 
             {/* Mobile menu button */}
-            <div className="md:hidden">
+            <div className="lg:hidden">
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="text-white hover:text-primary-400 focus:outline-none p-2 rounded-md transition-colors"
@@ -93,7 +93,7 @@ export function Navigation() {
             </div>
 
             {/* Desktop menu */}
-            <div className="hidden md:flex space-x-8 items-center">
+            <div className="hidden lg:flex space-x-8 items-center">
               {/* Home button */}
               <button
                 onClick={() => navigate('/')}
@@ -245,7 +245,7 @@ export function Navigation() {
           </div>
 
           {/* Mobile menu */}
-          <div className={`md:hidden py-2 ${isOpen ? 'block' : 'hidden'} transition-all duration-300 ease-in-out`}>
+          <div className={`lg:hidden py-2 ${isOpen ? 'block' : 'hidden'} transition-all duration-300 ease-in-out`}>
             <div className="space-y-2 max-h-[70vh] overflow-y-auto pb-4 bg-secondary-900 rounded-lg shadow-xl px-4">
               {/* Mobile About Us Dropdown */}
               <div className="mt-4">
