@@ -379,7 +379,7 @@ export default function AnalyticsTab() {
               {data.tracking_since
                 ? <>Visitor counting started {shortDate(data.tracking_since, true)}. </>
                 : <>Visitor counting starts as soon as this update is live. </>}
-              {data.form_events > 0 && <>Form views and submissions are counted separately ({nf.format(data.form_events)} in this period). </>}
+              {data.form_events > 0 && <>Form submissions in this period: {nf.format(data.form_events)} (each one is in its own tab). </>}
               Visitors are counted anonymously: no names, emails or IP addresses are stored, admin pages are never counted,
               and browsers set to “Do Not Track” are skipped.
             </p>

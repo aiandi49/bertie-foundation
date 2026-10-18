@@ -118,7 +118,7 @@ BEGIN
     'new_visitors',   (SELECT count(DISTINCT metadata->>'v') FROM pv WHERE metadata->>'new' = 'true'),
     'visits',         (SELECT count(DISTINCT metadata->>'s') FROM pv),
     'clicks',         (SELECT count(*) FROM ck),
-    'form_events',    (SELECT count(*) FROM ev WHERE event_type NOT IN ('pageview', 'click')),
+    'form_events',    (SELECT count(*) FROM ev WHERE action ILIKE 'submit%'),
     'pages', (SELECT coalesce(jsonb_agg(x ORDER BY x.n DESC, x.label), '[]'::jsonb) FROM (
                 SELECT component AS label, count(*) AS n FROM pv GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 12) x),
     'buttons', (SELECT coalesce(jsonb_agg(x ORDER BY x.n DESC, x.label), '[]'::jsonb) FROM (
