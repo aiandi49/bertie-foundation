@@ -122,6 +122,10 @@ export default function Pictures() {
     }
   );
   
+  // Uploading and album tools need a photo server this site doesn't have yet, so they stay
+  // hidden from visitors. Set to true once photo storage is set up.
+  const GALLERY_EDITING = false;
+
   // The query starts as null (and stays null if loading fails), so never read .length on it directly.
   const albums: Album[] = Array.isArray(albumData) ? albumData : [];
 
@@ -381,7 +385,8 @@ export default function Pictures() {
                   Explore our visual journey of community impact through these inspiring photographs.
                   Each image captures a moment of positive change in our mission.
                 </p>
-                <div className="flex gap-4 justify-center mt-4">  
+                {GALLERY_EDITING && (
+                <div className="flex flex-wrap gap-4 justify-center mt-4">
                   <Button
                     onClick={() => setIsUploadModalOpen(true)}
                     className="flex items-center gap-2"
@@ -410,6 +415,7 @@ export default function Pictures() {
                     {isSyncing ? 'Syncing...' : 'Sync with Videos'}
                   </Button>
                 </div>
+                )}
               </motion.div>
             </div>
           </div>
@@ -452,18 +458,24 @@ export default function Pictures() {
               ) : albums.length === 0 ? (
                 <div className="text-center py-16 border border-dashed border-primary-700 rounded-lg bg-primary-800/30">
                   <Image className="w-16 h-16 text-primary-500 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-2xl font-medium text-white mb-2">No Albums Yet</h3>
-                  <p className="text-gray-400 max-w-md mx-auto mb-8">
-                    Create your first album to start organizing your photos by category.
+                  <h3 className="text-2xl font-medium text-white mb-2">Albums coming soon</h3>
+                  <p className="text-gray-300 max-w-md mx-auto mb-8 px-4">
+                    Photo albums from our events are on their way. In the meantime, you can watch our event videos.
                   </p>
-                  <Button 
-                    onClick={() => setIsAlbumModalOpen(true)}
-                    variant="primary"
-                    className="flex items-center gap-2 mx-auto"
-                  >
-                    <FolderPlus className="w-4 h-4" />
-                    Create First Album
-                  </Button>
+                  {GALLERY_EDITING ? (
+                    <Button 
+                      onClick={() => setIsAlbumModalOpen(true)}
+                      variant="primary"
+                      className="flex items-center gap-2 mx-auto"
+                    >
+                      <FolderPlus className="w-4 h-4" />
+                      Create First Album
+                    </Button>
+                  ) : (
+                    <Button onClick={() => navigate('/videos')} variant="primary" className="flex items-center gap-2 mx-auto">
+                      Watch our event videos
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <AlbumGrid 
@@ -491,18 +503,20 @@ export default function Pictures() {
               ) : images.length === 0 ? (
                 <div className="text-center py-16 border border-dashed border-primary-700 rounded-lg bg-primary-800/30">
                   <Image className="w-16 h-16 text-primary-500 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-2xl font-medium text-white mb-2">No Photos Yet</h3>
-                  <p className="text-gray-400 max-w-md mx-auto mb-8">
-                    Upload your first photo to start building your gallery.
+                  <h3 className="text-2xl font-medium text-white mb-2">Photos coming soon</h3>
+                  <p className="text-gray-300 max-w-md mx-auto mb-8 px-4">
+                    New photos from our work in Pattaya will appear here.
                   </p>
-                  <Button 
-                    onClick={() => setIsUploadModalOpen(true)}
-                    variant="primary"
-                    className="flex items-center gap-2 mx-auto"
-                  >
-                    <Upload className="w-4 h-4" />
-                    Upload First Photo
-                  </Button>
+                  {GALLERY_EDITING && (
+                    <Button 
+                      onClick={() => setIsUploadModalOpen(true)}
+                      variant="primary"
+                      className="flex items-center gap-2 mx-auto"
+                    >
+                      <Upload className="w-4 h-4" />
+                      Upload First Photo
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
