@@ -6,6 +6,7 @@ import { NetworkStatusProvider } from './NetworkStatusProvider';
 import { ThemeProvider } from './ThemeProvider';
 import { PerformanceTracker } from './PerformanceTracker';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
+import { SiteAnalytics } from './SiteAnalytics';
 
 // Define a dark theme for Chakra UI
 const chakraTheme = extendTheme({
@@ -49,6 +50,7 @@ export function AppProvider({ children }: AppProviderProps) {
           </NetworkStatusProvider>
         </ThemeProvider>
       </ChakraProvider>
+      <SiteAnalytics />
       <Toaster position="top-right" richColors />
     </>
   );

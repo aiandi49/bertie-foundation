@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/Layout';
-import { Mail, Users, MessageSquare, Award, Star, Trash2, RefreshCw, CheckCircle, XCircle, Download, FileSpreadsheet, Network } from 'lucide-react';
+import { Mail, Users, MessageSquare, Award, Star, Trash2, RefreshCw, CheckCircle, XCircle, Download, FileSpreadsheet, Network, BarChart3 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { supabase } from '../utils/supabaseClient';
 import { useAuth, logAdminActivity } from '../utils/useAuth';
 import OrgChartTab from '../components/OrgChartTab';
+import AnalyticsTab from '../components/AnalyticsTab';
 import * as XLSX from 'xlsx';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type TabKey = 'newsletter' | 'contact' | 'volunteer' | 'stories' | 'feedback' | 'orgchart';
+type TabKey = 'analytics' | 'newsletter' | 'contact' | 'volunteer' | 'stories' | 'feedback' | 'orgchart';
 
 interface Subscriber { id: string; name: string; email: string; status: string; source: string; subscribed_at: string; }
 interface ContactReq  { id: string; name: string; email: string; subject: string; message: string; category?: string; submitted_at: string; status: string; }
@@ -499,6 +500,7 @@ function Section({ title, count, onRefresh, onExport, loading, error, children }
 // ─── Admin Dashboard ──────────────────────────────────────────────────────────
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
+  { key: 'analytics',  label: 'Analytics',        icon: <BarChart3 className="w-4 h-4" /> },
   { key: 'newsletter', label: 'Newsletter',       icon: <Mail className="w-4 h-4" /> },
   { key: 'contact',    label: 'Contact',          icon: <MessageSquare className="w-4 h-4" /> },
   { key: 'volunteer',  label: 'Volunteers',       icon: <Users className="w-4 h-4" /> },
@@ -508,7 +510,7 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
 ];
 
 function AdminDashboard({ userEmail }: { userEmail: string }) {
-  const [tab, setTab] = useState<TabKey>('newsletter');
+  const [tab, setTab] = useState<TabKey>('analytics');
   const [exporting, setExporting] = useState(false);
 
   const handleLogout = async () => {
@@ -567,6 +569,7 @@ function AdminDashboard({ userEmail }: { userEmail: string }) {
           <OrgChartTab />
         ) : (
           <div className="bg-gray-900/50 rounded-2xl p-6 border border-gray-800">
+            {tab === 'analytics'  && <AnalyticsTab />}
             {tab === 'newsletter' && <NewsletterTab userEmail={userEmail} />}
             {tab === 'contact'    && <ContactTab    userEmail={userEmail} />}
             {tab === 'volunteer'  && <VolunteerTab  userEmail={userEmail} />}
