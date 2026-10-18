@@ -9,6 +9,13 @@ const getYouTubeThumbnail = (video: { thumbnailUrl?: string; videoUrl: string })
   return match ? `https://i.ytimg.com/vi/${match[1]}/hqdefault.jpg` : "";
 };
 
+// Helper: the YouTube page for a video, so a tap opens it in the YouTube app or a new tab.
+// (The stored links are "embed" links, which phones don't open as a normal video page.)
+const getYouTubeWatchUrl = (videoUrl: string): string | null => {
+  const match = videoUrl.match(/(?:embed\/|v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return match ? `https://www.youtube.com/watch?v=${match[1]}` : null;
+};
+
 // Group videos by year, sorted newest first
 const groupByYear = (videos: typeof VIDEOS) => {
   const sorted = [...videos].sort((a, b) => {
@@ -56,13 +63,19 @@ const useFadeIn = () => {
 const EventCard: React.FC<{ event: typeof VIDEOS[0]; featured?: boolean }> = ({ event, featured }) => {
   const ref = useFadeIn();
   const thumb = getYouTubeThumbnail(event);
+  const watchUrl = getYouTubeWatchUrl(event.videoUrl);
+  // Each card is a real link to its video. Without one, the cards could not be opened at all.
+  const linkProps = watchUrl
+    ? { href: watchUrl, target: "_blank", rel: "noopener noreferrer", "aria-label": `Watch "${event.title}" on YouTube (opens in a new tab)` }
+    : {};
 
   if (featured) {
     return (
-      <div
-        ref={ref}
+      <a
+        {...linkProps}
+        ref={ref as any}
         style={{ opacity: 0, transform: "translateY(24px)", transition: "opacity 0.55s ease, transform 0.55s ease" }}
-        className="col-span-full flex flex-col md:flex-row bg-secondary-800 border border-white/5 rounded-2xl overflow-hidden hover:-translate-y-1 hover:border-primary-500/40 hover:shadow-2xl transition-all duration-200 group"
+        className="col-span-full flex flex-col md:flex-row cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 bg-secondary-800 border border-white/5 rounded-2xl overflow-hidden hover:-translate-y-1 hover:border-primary-500/40 hover:shadow-2xl transition-all duration-200 group"
       >
         {/* Thumbnail */}
         <div className="relative w-full md:w-96 flex-shrink-0 aspect-video md:aspect-auto overflow-hidden bg-secondary-900">
@@ -74,7 +87,7 @@ const EventCard: React.FC<{ event: typeof VIDEOS[0]; featured?: boolean }> = ({ 
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400"
             />
           )}
-          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/20 md:bg-black/30 opacity-100 md:opacity-0 md:group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity flex items-center justify-center">
             <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
               <svg className="w-5 h-5 fill-gray-900 ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             </div>
@@ -99,15 +112,16 @@ const EventCard: React.FC<{ event: typeof VIDEOS[0]; featured?: boolean }> = ({ 
             </div>
           )}
         </div>
-      </div>
+      </a>
     );
   }
 
   return (
-    <div
-      ref={ref}
+    <a
+      {...linkProps}
+      ref={ref as any}
       style={{ opacity: 0, transform: "translateY(24px)", transition: "opacity 0.55s ease, transform 0.55s ease" }}
-      className="flex flex-col bg-secondary-800 border border-white/5 rounded-2xl overflow-hidden hover:-translate-y-1 hover:border-primary-500/40 hover:shadow-2xl transition-all duration-200 group"
+      className="flex flex-col cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 bg-secondary-800 border border-white/5 rounded-2xl overflow-hidden hover:-translate-y-1 hover:border-primary-500/40 hover:shadow-2xl transition-all duration-200 group"
     >
       {/* Thumbnail */}
       <div className="relative aspect-video overflow-hidden bg-secondary-900">
@@ -119,7 +133,7 @@ const EventCard: React.FC<{ event: typeof VIDEOS[0]; featured?: boolean }> = ({ 
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400"
           />
         )}
-        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/20 md:bg-black/30 opacity-100 md:opacity-0 md:group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity flex items-center justify-center">
           <div className="w-11 h-11 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
             <svg className="w-4 h-4 fill-gray-900 ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -144,7 +158,7 @@ const EventCard: React.FC<{ event: typeof VIDEOS[0]; featured?: boolean }> = ({ 
           </div>
         )}
       </div>
-    </div>
+    </a>
   );
 };
 
