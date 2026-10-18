@@ -344,20 +344,6 @@ export default function ContactUs() {
               </div>
             </motion.div>
 
-            {/* QR Code */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.8 }}
-              className="bg-white rounded-xl p-8 shadow-lg flex flex-col items-center"
-            >
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Scan to Connect on LINE</h3>
-              <img 
-                src="/images/qr-code-bertie.jpeg" 
-                alt="LINE QR Code" 
-                className="w-full max-w-xs rounded-lg"
-              />
-            </motion.div>
           </div>
         </div>
       </div>

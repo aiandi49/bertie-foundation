@@ -47,10 +47,13 @@ export default function WhoIsBertie() {
               className="max-w-4xl mx-auto text-center mb-16"
             >
               {/* Logo and Title */}
-              <div className="flex flex-col items-center justify-center gap-16 mb-12">
+              {/* The logo used to be enlarged with a CSS transform, which doesn't make room for itself:
+                  on phones it ran past the screen edges and crowded the headings. It is now sized
+                  by width, so the spacing around it is real. */}
+              <div className="flex flex-col items-center justify-center gap-10 md:gap-14 mb-12">
                 <h1 className="text-5xl md:text-6xl font-display font-bold text-[#003366] leading-tight">BERTIE FOUNDATION</h1>
-                <div className="transform scale-125">
-                  <BertieLogo />
+                <div className="w-full max-w-[22rem] sm:max-w-md md:max-w-lg px-2">
+                  <BertieLogo className="w-full h-auto" />
                 </div>
                 <h2 className="text-4xl md:text-5xl font-display font-bold text-[#003366] leading-tight">
                   Who is Bertie?

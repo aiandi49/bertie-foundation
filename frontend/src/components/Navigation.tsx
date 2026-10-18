@@ -247,8 +247,22 @@ export function Navigation() {
           {/* Mobile menu */}
           <div className={`lg:hidden py-2 ${isOpen ? 'block' : 'hidden'} transition-all duration-300 ease-in-out`}>
             <div className="space-y-2 max-h-[70vh] overflow-y-auto pb-4 bg-secondary-900 rounded-lg shadow-xl px-4">
+              {/* Home comes first in the phone menu, as on the desktop menu */}
+              <div className="pt-4">
+                <button
+                  onClick={() => {
+                    navigate('/');
+                    setIsOpen(false);
+                  }}
+                  className={`flex items-center space-x-3 w-full px-3 py-3 rounded-lg transition-all duration-300 text-base ${window.location.pathname === '/' ? 'bg-blue-500 text-white' : isResourcesPage ? 'text-secondary-700 hover:bg-blue-500/10 hover:text-secondary-900' : 'text-gray-300 hover:bg-blue-500/10 hover:text-white'}`}
+                >
+                  <Home size={18} className="text-red-500" />
+                  <span className="font-bold">Home</span>
+                </button>
+              </div>
+
               {/* Mobile About Us Dropdown */}
-              <div className="mt-4">
+              <div>
                 <button
                   onClick={() => setIsAboutUsOpen(!isAboutUsOpen)}
                   className={`flex items-center justify-between w-full px-3 py-3 rounded-lg transition-all duration-300 ${isResourcesPage ? 'text-secondary-700 hover:bg-blue-500/10 hover:text-secondary-900' : 'text-gray-300 hover:bg-blue-500/10 hover:text-white'}`}
@@ -372,7 +386,7 @@ export function Navigation() {
 
               {/* Main Links */}
               <div className="mt-2 space-y-2">
-                {mainLinks.filter(link => !(link.adminOnly && !isDevMode)).map((link) => {
+                {mainLinks.filter(link => link.path !== '/' && !(link.adminOnly && !isDevMode)).map((link) => {
                   const Icon = link.icon;
                   
                   // Special case for Admin on mobile
