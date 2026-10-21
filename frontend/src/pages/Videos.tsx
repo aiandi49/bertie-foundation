@@ -150,16 +150,6 @@ export const VIDEOS: Video[] = [
     "showThumbnail": true
   },
   {
-    "title": "First 2 Events of 2024",
-    "description": "Bertie Foundation Events #2-#3 (Feb-Mar 2024)",
-    "date": "February-March 2024",
-    "videoUrl": "https://www.youtube.com/embed/_KSYXN6ZAMs",
-    "thumbnailUrl": "https://i.ytimg.com/vi/_KSYXN6ZAMs/hqdefault.jpg",
-    "category": "Donation Event",
-    "tags": ["education", "community"],
-    "showThumbnail": true
-  },
-  {
     "title": "Karunyawet Home for Persons with Disabilities",
     "description": "Bertie Foundation visited Karunyawet Home for Persons with Disabilities. Bertie Foundation Event #3",
     "date": "March 2024",
