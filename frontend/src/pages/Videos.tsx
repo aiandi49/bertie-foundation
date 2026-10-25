@@ -25,8 +25,98 @@ const getYouTubeID = (url: string) => {
 
 export const VIDEOS: Video[] = [
   {
+    "title": "Banglamung Home for Boys - Bertie Donation Event 2026",
+    "description": "In April of 2026, the Bertie Foundation donated to the Banglamung Home for Boys in Pattaya, Thailand. This would be the first of three different donation events for the boys home in 2026.",
+    "date": "April 2026",
+    "videoUrl": "https://www.youtube.com/embed/8fJWIztETCQ",
+    "thumbnailUrl": "https://i.ytimg.com/vi/8fJWIztETCQ/hqdefault.jpg",
+    "category": "Donation Event",
+    "tags": ["children", "community"],
+    "showThumbnail": true
+  },
+  {
+    "title": "MERCY Foundation Community Outreach",
+    "description": "In January of 2026, the Bertie Foundation teamed up with MERCY Pattaya to give to an underserved community in Pattaya, Thailand.",
+    "date": "January 2026",
+    "videoUrl": "https://www.youtube.com/embed/6jU70GIOH3w",
+    "thumbnailUrl": "https://i.ytimg.com/vi/6jU70GIOH3w/hqdefault.jpg",
+    "category": "Donation Event",
+    "tags": ["community"],
+    "showThumbnail": true
+  },
+  {
+    "title": "Animal Army Pattaya",
+    "description": "In December of 2025, the Bertie Foundation made their first visit and donation to the amazing Animal Army.",
+    "date": "December 2025",
+    "videoUrl": "https://www.youtube.com/embed/Rv5fwgWjHs4",
+    "thumbnailUrl": "https://i.ytimg.com/vi/Rv5fwgWjHs4/hqdefault.jpg",
+    "category": "Donation Event",
+    "tags": ["animals", "community"],
+    "showThumbnail": true
+  },
+  {
+    "title": "Fountain of Life Women's Center - Returning to Where Bertie Started",
+    "description": "In October of 2025, the Bertie Foundation made another donation to the incredible Fountain of Life Women's Center.",
+    "date": "October 2025",
+    "videoUrl": "https://www.youtube.com/embed/ZOQsPpJpfY8",
+    "thumbnailUrl": "https://i.ytimg.com/vi/ZOQsPpJpfY8/hqdefault.jpg",
+    "category": "Donation Event",
+    "tags": ["women"],
+    "showThumbnail": true
+  },
+  {
+    "title": "Handing Out Food with Hand to Hand Foundation",
+    "description": "In August of 2025, the Bertie Foundation once again teamed up with Hand to Hand Foundation to deliver food and hygiene products to those in need for Thai Mother's Day.",
+    "date": "August 2025",
+    "videoUrl": "https://www.youtube.com/embed/6TZtDs6Z7_s",
+    "thumbnailUrl": "https://i.ytimg.com/vi/6TZtDs6Z7_s/hqdefault.jpg",
+    "category": "Mother's Day",
+    "tags": ["community"],
+    "showThumbnail": true
+  },
+  {
+    "title": "Chaleo-Pavana Memorial School - Bertie Foundation and Red Bull",
+    "description": "In July of 2025, the Bertie Foundation made their first visit and donation to the amazing Chaleo-Pavana Memorial School.",
+    "date": "July 2025",
+    "videoUrl": "https://www.youtube.com/embed/DQX8GsOL-38",
+    "thumbnailUrl": "https://i.ytimg.com/vi/DQX8GsOL-38/hqdefault.jpg",
+    "category": "Donation Event",
+    "tags": ["children", "education", "disability"],
+    "showThumbnail": true
+  },
+  {
+    "title": "Baan Kru Boonchoo Home for Special Needs Children",
+    "description": "In June of 2025, the Bertie Foundation made their first visit and donation to Baan Kru Boonchoo Home for Special Needs Children.",
+    "date": "June 2025",
+    "videoUrl": "https://www.youtube.com/embed/IghReLv-LeE",
+    "thumbnailUrl": "https://i.ytimg.com/vi/IghReLv-LeE/hqdefault.jpg",
+    "category": "Donation Event",
+    "tags": ["children", "disability"],
+    "showThumbnail": true
+  },
+  {
+    "title": "Passion Project: The Glory Hut Foundation",
+    "description": "In May of 2025, the Bertie Foundation had our first official donation event at the Glory Hut Foundation, but our relationship has been nearly a year in the making.",
+    "date": "May 2025",
+    "videoUrl": "https://www.youtube.com/embed/vdu7qaESn-o",
+    "thumbnailUrl": "https://i.ytimg.com/vi/vdu7qaESn-o/hqdefault.jpg",
+    "category": "Donation Event",
+    "tags": ["community"],
+    "showThumbnail": true
+  },
+  {
+    "title": "Father Ray's Children's Village - 2nd Visit",
+    "description": "In April of 2025, the Bertie Foundation donated to Father Ray Children's Village. With the help of Dank Pizza and Cafe, Bertie also provided a pizza party.",
+    "date": "April 2025",
+    "videoUrl": "https://www.youtube.com/embed/60DCHc5bKHA",
+    "thumbnailUrl": "https://i.ytimg.com/vi/60DCHc5bKHA/hqdefault.jpg",
+    "category": "Donation Event",
+    "tags": ["children", "community"],
+    "showThumbnail": true
+  },
+  {
     "title": "Bertie and Take Care Kids Foundation go to Underwater World Pattaya",
-    "description": "Bertie Foundation Event #3 of 2025 - Bertie Foundation had out first ever field trip. We took the children of Take Care Kids Foundation to the aquarium at Underwater World Pattaya. We also hosted a pizza party for them with the help of Dank Pizza and gave them treat bags to take home.",
+    "description": "Bertie Foundation Event #3 of 2025 - Bertie Foundation had our first ever field trip. We took the children of Take Care Kids Foundation to the aquarium at Underwater World Pattaya. We also hosted a pizza party for them with the help of Dank Pizza and gave them treat bags to take home.",
     "date": "March 2025",
     "videoUrl": "https://www.youtube.com/embed/XohHEfowLYs",
     "thumbnailUrl": "https://i.ytimg.com/vi/XohHEfowLYs/hqdefault.jpg",
@@ -153,8 +243,8 @@ export const VIDEOS: Video[] = [
     "title": "Karunyawet Home for Persons with Disabilities",
     "description": "Bertie Foundation visited Karunyawet Home for Persons with Disabilities. Bertie Foundation Event #3",
     "date": "March 2024",
-    "videoUrl": "https://www.youtube.com/embed/-41-PifqgA0",
-    "thumbnailUrl": "https://i.ytimg.com/vi/-41-PifqgA0/hqdefault.jpg",
+    "videoUrl": "https://www.youtube.com/embed/JqxA-AY3bK8",
+    "thumbnailUrl": "https://i.ytimg.com/vi/JqxA-AY3bK8/hqdefault.jpg",
     "category": "Disability Support",
     "tags": ["disability", "inclusion", "community"],
     "showThumbnail": true
