@@ -8,3 +8,10 @@
 .wa-btn:hover { background: #096a33; color: #fff; }
 .wa-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 @media (max-width: 560px) { .wa-btn { width: 100%; text-align: center; } }
+
+/* Help band (add-help.mjs) */
+.help-band { margin: 10px auto 0; max-width: 760px; padding: 20px 24px; border: 1px solid var(--accent); border-radius: var(--radius); background: var(--card); display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; }
+.help-band p { margin: 0; flex: 1 1 260px; color: var(--soft); }
+.help-btn { white-space: nowrap; }
+.help-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 560px) { .help-btn { width: 100%; } }
