@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "title": "Small Charity Website and Donor Care Guide",
+    "subtitle": "How a small charity can run a website that earns trust and support: telling your story, a clear donate page, thanking and receipting donors, sharing impact updates, a blog and newsletter, simple forms, and keeping donor data safe.",
+    "area": "Nonprofit websites and donor care",
+    "audience": "small charities, volunteer-run foundations and the people who build their websites",
+    "checked": "2026-10-31",
+    "checkedLabel": "Oct 31, 2026",
+    "note": "A template built from a charity's web app, with no names, events, photos or donor details. Rules for receipts and fundraising differ by country; check your local charity regulator.",
+    "headline": "Give people a reason to give",
+    "headlineAccent": "a reason to give",
+    "placeholder": "Example: What should a charity donate page include?",
+    "starters": [
+      "What makes a charity website trustworthy?",
+      "What should my donate page include?",
+      "How do I thank donors well?",
+      "How often should I share impact updates?"
+    ],
+    "featured": ["trust", "donate-page", "thank-donors", "impact-updates", "newsletter", "donor-data"],
+    "brand": { "short": "CW", "name": "Charity Website Guide", "tag": "Trust, giving and thank-yous" },
+    "theme": { "accent": "#e85d75", "accent2": "#ffb84c", "mode": "dark" },
+    "assistant": {
+      "name": "the Charity Website guide",
+      "voice": "You are a kind, practical nonprofit communications coach. Help small charities explain their work honestly, make giving easy, thank donors warmly and protect people's privacy, especially children's. Point to local charity regulators for legal questions."
+    }
+  },
+  "entries": [
+    {
+      "id": "trust",
+      "kind": "Story",
+      "title": "What makes a charity site trustworthy",
+      "summary": "Say who you are, who you help, how money is used and how to reach you, with real (consented) photos and regular updates.",
+      "body": [
+        "- Mission in one sentence on the home page.",
+        "- Who runs it: founders or board, and where you're registered.",
+        "- Where donations go, in plain numbers.",
+        "- Contact details and a privacy policy.",
+        "- Recent news, so visitors know you're active."
+      ],
+      "tags": ["trust", "transparency", "about us", "mission", "credibility"]
+    },
+    {
+      "id": "donate-page",
+      "kind": "Giving",
+      "title": "A clear donate page",
+      "summary": "One short reason to give, suggested amounts tied to real outcomes, few form fields, and the payment options your donors actually use.",
+      "body": [
+        "- Lead with one need and one photo (with consent).",
+        "- Suggested amounts: 'this buys school supplies for one child'.",
+        "- Monthly giving option.",
+        "- Mobile-friendly, few fields, trusted payment providers.",
+        "- Say whether gifts are tax-deductible where you are."
+      ],
+      "tags": ["donate", "giving", "payments", "monthly giving", "conversion"]
+    },
+    {
+      "id": "thank-donors",
+      "kind": "Giving",
+      "title": "Thanking and receipting donors",
+      "summary": "Thank every donor quickly and personally, send the receipt your tax rules require, and tell them what their gift did.",
+      "body": [
+        "- Automatic thank-you email within minutes.",
+        "- A personal note or call for first-time and larger gifts.",
+        "- Receipts: in the U.S., written acknowledgment for gifts of $250 or more.",
+        "- Follow up later with the result of their gift."
+      ],
+      "tags": ["thank you", "receipts", "donor retention", "acknowledgment", "stewardship"],
+      "sources": [{ "title": "IRS: Charitable contributions, written acknowledgments", "url": "https://www.irs.gov/charities-non-profits/charitable-organizations/charitable-contributions-written-acknowledgments" }]
+    },
+    {
+      "id": "impact-updates",
+      "kind": "Story",
+      "title": "Sharing impact updates",
+      "summary": "Short, regular updates (who you helped, what you gave, what's next) build trust; a yearly summary shows the bigger picture.",
+      "body": [
+        "- After each event: date, what was given, how many people helped.",
+        "- A running count for the year.",
+        "- Thank partners and volunteers by name only with permission.",
+        "- Never identify vulnerable people without consent."
+      ],
+      "tags": ["impact", "updates", "reporting", "events", "storytelling"]
+    },
+    {
+      "id": "newsletter",
+      "kind": "Story",
+      "title": "Blog and newsletter",
+      "summary": "A simple blog for stories and a monthly email for supporters, with opt-in sign-up and an easy unsubscribe.",
+      "body": [
+        "- One story, one photo, one ask per email.",
+        "- Sign-up box on every page.",
+        "- Unsubscribe link in every email.",
+        "- Send on a regular rhythm."
+      ],
+      "tags": ["newsletter", "blog", "email", "unsubscribe", "supporters"],
+      "sources": [{ "title": "FTC: CAN-SPAM Act compliance guide", "url": "https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business" }]
+    },
+    {
+      "id": "forms",
+      "kind": "Running it",
+      "title": "Contact, volunteer and feedback forms",
+      "summary": "Ask only what you need, confirm every submission by email, and route each form to the person who handles it.",
+      "body": [
+        "- Short forms with clear labels.",
+        "- A confirmation message and email.",
+        "- Spam protection (a hidden field or a check).",
+        "- An admin view so nothing gets lost."
+      ],
+      "tags": ["forms", "contact", "volunteer", "feedback", "admin"]
+    },
+    {
+      "id": "donor-data",
+      "kind": "Running it",
+      "title": "Keeping donor data safe",
+      "summary": "Let the payment provider handle card details, lock down your database, limit who can see donor lists, and never sell or share them.",
+      "body": [
+        "- Never store card numbers yourself.",
+        "- Database access rules so the public can't read records.",
+        "- Admin accounts with strong passwords and two-step sign-in.",
+        "- A privacy policy that says what you collect and why."
+      ],
+      "tags": ["privacy", "donor data", "security", "admin", "policy"]
+    }
+  ]
+}
