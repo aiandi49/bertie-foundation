@@ -61,3 +61,12 @@ yarn dev
 ## License
 
 Your license here.
+
+## Guide hub (GUB engine)
+
+`/hub` is a teaching guide hub, **Small Charity Website and Donor Care Guide**, built from `data/gub.json` as a template
+(no names, events or personal details; no accounts or payments). `/hub/guide` is
+the full guide with live search, and `frontend/api/gub-chat.js` answers from the guide when
+`ANTHROPIC_API_KEY` is set in Vercel (optional `GUB_MODEL`); otherwise the page
+answers from its own guide search. To change it, edit `data/gub.json` and rerun
+`SKIP_VERCEL=1 API_DIR=frontend/api bash gub-engine-template/statichub.sh bertie-foundation frontend/public` from AI-AND-I-REPOS. The app itself is unchanged.
