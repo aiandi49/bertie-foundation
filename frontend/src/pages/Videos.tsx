@@ -31,7 +31,7 @@ export const VIDEOS: Video[] = [
     "videoUrl": "https://www.youtube.com/embed/8fJWIztETCQ",
     "thumbnailUrl": "https://i.ytimg.com/vi/8fJWIztETCQ/hqdefault.jpg",
     "category": "Donation Event",
-    "tags": ["children", "community"],
+    "tags": ["BertieFoundation", "NonProfitImpact", "PattayaThailand", "ChildWelfare", "CharityWork"],
     "showThumbnail": true
   },
   {
@@ -41,7 +41,7 @@ export const VIDEOS: Video[] = [
     "videoUrl": "https://www.youtube.com/embed/6jU70GIOH3w",
     "thumbnailUrl": "https://i.ytimg.com/vi/6jU70GIOH3w/hqdefault.jpg",
     "category": "Donation Event",
-    "tags": ["community"],
+    "tags": ["BertieFoundation", "MercyPattaya", "CommunityOutreach", "PattayaCommunity", "SocialImpact"],
     "showThumbnail": true
   },
   {
@@ -51,7 +51,7 @@ export const VIDEOS: Video[] = [
     "videoUrl": "https://www.youtube.com/embed/Rv5fwgWjHs4",
     "thumbnailUrl": "https://i.ytimg.com/vi/Rv5fwgWjHs4/hqdefault.jpg",
     "category": "Donation Event",
-    "tags": ["animals", "community"],
+    "tags": ["BertieFoundation", "AnimalArmy", "AnimalWelfare", "ChonburiThailand", "StrayAnimalRescue"],
     "showThumbnail": true
   },
   {
@@ -61,7 +61,7 @@ export const VIDEOS: Video[] = [
     "videoUrl": "https://www.youtube.com/embed/ZOQsPpJpfY8",
     "thumbnailUrl": "https://i.ytimg.com/vi/ZOQsPpJpfY8/hqdefault.jpg",
     "category": "Donation Event",
-    "tags": ["women"],
+    "tags": ["BertieFoundation", "FountainOfLife", "WomenEmpowerment", "WomenCenterPattaya", "SocialImpact"],
     "showThumbnail": true
   },
   {
@@ -71,7 +71,7 @@ export const VIDEOS: Video[] = [
     "videoUrl": "https://www.youtube.com/embed/6TZtDs6Z7_s",
     "thumbnailUrl": "https://i.ytimg.com/vi/6TZtDs6Z7_s/hqdefault.jpg",
     "category": "Mother's Day",
-    "tags": ["community"],
+    "tags": ["BertieFoundation", "HandToHandFoundation", "MothersDayThailand", "PattayaCommunity", "CommunityOutreach"],
     "showThumbnail": true
   },
   {
@@ -81,7 +81,7 @@ export const VIDEOS: Video[] = [
     "videoUrl": "https://www.youtube.com/embed/DQX8GsOL-38",
     "thumbnailUrl": "https://i.ytimg.com/vi/DQX8GsOL-38/hqdefault.jpg",
     "category": "Donation Event",
-    "tags": ["children", "education", "disability"],
+    "tags": ["BertieFoundation", "ChaleoPavana", "SpecialEducationThailand", "InclusiveEducation", "NonProfitImpact"],
     "showThumbnail": true
   },
   {
@@ -91,7 +91,7 @@ export const VIDEOS: Video[] = [
     "videoUrl": "https://www.youtube.com/embed/IghReLv-LeE",
     "thumbnailUrl": "https://i.ytimg.com/vi/IghReLv-LeE/hqdefault.jpg",
     "category": "Donation Event",
-    "tags": ["children", "disability"],
+    "tags": ["BertieFoundation", "BaanKruBoonchoo", "SpecialNeedsChildren", "Sattahip", "SpecialNeedsSupport"],
     "showThumbnail": true
   },
   {
@@ -101,7 +101,7 @@ export const VIDEOS: Video[] = [
     "videoUrl": "https://www.youtube.com/embed/vdu7qaESn-o",
     "thumbnailUrl": "https://i.ytimg.com/vi/vdu7qaESn-o/hqdefault.jpg",
     "category": "Donation Event",
-    "tags": ["community"],
+    "tags": ["BertieFoundation", "GloryHutFoundation", "PattayaThailand", "PassionProject", "SocialImpact"],
     "showThumbnail": true
   },
   {
@@ -111,7 +111,7 @@ export const VIDEOS: Video[] = [
     "videoUrl": "https://www.youtube.com/embed/60DCHc5bKHA",
     "thumbnailUrl": "https://i.ytimg.com/vi/60DCHc5bKHA/hqdefault.jpg",
     "category": "Donation Event",
-    "tags": ["children", "community"],
+    "tags": ["BertieFoundation", "FatherRayFoundation", "PattayaThailand", "ChildWelfare", "CommunityOutreach"],
     "showThumbnail": true
   },
   {
@@ -246,7 +246,7 @@ export const VIDEOS: Video[] = [
     "videoUrl": "https://www.youtube.com/embed/JqxA-AY3bK8",
     "thumbnailUrl": "https://i.ytimg.com/vi/JqxA-AY3bK8/hqdefault.jpg",
     "category": "Disability Support",
-    "tags": ["disability", "inclusion", "community"],
+    "tags": ["BertieFoundation", "KarunyawetHome", "DisabilitySupport", "PattayaThailand", "CommunityOutreach"],
     "showThumbnail": true
   },
   {
